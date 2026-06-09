@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pet Life - Welcome</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- Error notification -->
+    <div id="errorNotification" class="error-notification" role="alert" aria-live="assertive" aria-hidden="true">
+      <div class="error-content">
+        <span id="errorMessage"></span>
+        <button id="retryBtn" onclick="retryLastAction()" class="retry-button">Retry</button>
+        <button id="dismissBtn" onclick="dismissError()" class="dismiss-button">Dismiss</button>
+      </div>
+    </div>
+
+    <div class="container" style="justify-content: center;">
+      <div class="card-main" style="max-width: 500px; margin: 0 auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <h1 style="margin: 0">Pet Life</h1>
+          <a href="help.html" class="help-button" aria-label="Open help page" onclick="event.preventDefault(); if (window.apiNavigation) apiNavigation.goToHelp(); else window.location.href = 'help.html';">
+            <button>Help Page</button>
+          </a>
+        </div>
+
+        <!-- Setup screen -->
+        <div id="setup">
+          <div class="setup-header">
+            <h2>Welcome to Pet Life!</h2>
+            <p>Care for your pet while managing your own health and resources.</p>
+          </div>
+
+          <!-- Player setup -->
+          <div class="setup-section">
+            <label for="playerNameInput">Your Name</label>
+            <input type="text" id="playerNameInput" placeholder="Enter your name" aria-label="Player name input" maxlength="20" />
+            <div class="input-hint" id="playerNameRules">
+              Name rules: 1-20 chars. Allowed: letters, numbers, space, -, _, '. Reserved words are not allowed.
+            </div>
+          </div>
+
+          <!-- Pet setup -->
+          <div class="setup-section">
+            <label for="petNameInput">Pet Name</label>
+            <input type="text" id="petNameInput" placeholder="Name your pet" aria-label="Pet name input" maxlength="20" />
+            <div class="input-hint" id="petNameRules">
+              Name rules: 1-20 chars. Allowed: letters, numbers, space, -, _, '. Reserved words are not allowed.
+            </div>
+          </div>
+
+          <!-- Pet type selector -->
+          <div class="setup-section">
+            <label for="petType">Pet Type</label>
+            <select id="petType" aria-label="Pet type selection" onchange="updatePetPreview()">
+              <option value="Dog">Dog</option>
+              <option value="Cat">Cat</option>
+              <option value="Dragon">Dragon</option>
+            </select>
+          </div>
+
+          <!-- Pet preview -->
+          <div class="pet-preview-container">
+            <div id="petPreview" class="pet-preview"></div>
+            <p id="petPreviewText">Dog - Friendly and loyal</p>
+          </div>
+
+          <!-- Difficulty selector -->
+          <div class="setup-section">
+            <label>Difficulty</label>
+            <div class="difficulty-buttons">
+              <button type="button" class="difficulty-btn" id="easyBtn" onclick="selectDifficulty('easy')" aria-label="Easy difficulty">Easy</button>
+              <button type="button" class="difficulty-btn" id="normalBtn" onclick="selectDifficulty('normal')" aria-label="Normal difficulty">Normal</button>
+              <button type="button" class="difficulty-btn" id="hardBtn" onclick="selectDifficulty('hard')" aria-label="Hard difficulty">Hard</button>
+            </div>
+            <p id="difficultyInfo" class="difficulty-info">Easy: Start with $30</p>
+          </div>
+
+          <!-- Action buttons -->
+          <div class="setup-buttons">
+            <button onclick="handleStartGame()" aria-label="Start game" class="primary-btn">Start Game</button>
+            <button onclick="handleLoadGame()" aria-label="Load saved game" class="secondary-btn" id="loadBtn">Load Game</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="blockedWords.js"></script>
+    <script src="api.js"></script>
+    <script>
+      // Temporary setup helpers if your script.js isn't loaded on this page
+      let selectedDifficultySetting = 'easy';
+      
+      function selectDifficulty(diff) {
+        selectedDifficultySetting = diff;
+        const info = document.getElementById('difficultyInfo');
+        if(diff === 'easy') info.textContent = "Easy: Start with $30";
+        if(diff === 'normal') info.textContent = "Normal: Start with standard rules";
+        if(diff === 'hard') info.textContent = "Hard: Harder resource decay";
+        
+        document.querySelectorAll('.difficulty-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(diff + 'Btn').classList.add('active');
+      }
+
+      function updatePetPreview() {
+        const type = document.getElementById('petType').value;
+        const previewText = document.getElementById('petPreviewText');
+        if(type === 'Dog') previewText.textContent = "Dog - Friendly and loyal";
+        if(type === 'Cat') previewText.textContent = "Cat - Independent and calm";
+        if(type === 'Dragon') previewText.textContent = "Dragon - Rare and energetic";
+      }
+
+      function handleStartGame() {
+        const playerName = document.getElementById('playerNameInput').value.trim();
+        const petName = document.getElementById('petNameInput').value.trim();
+        const petType = document.getElementById('petType').value;
+
+        if (!playerName || !petName) {
+          alert('Please fill out both your name and your pet\'s name!');
+          return;
+        }
+
+        // Save choices so game.html can read them
+        localStorage.setItem('petLife_playerName', playerName);
+        localStorage.setItem('petLife_petName', petName);
+        localStorage.setItem('petLife_petType', petType);
+        localStorage.setItem('petLife_difficulty', selectedDifficultySetting);
+        localStorage.removeItem('petLife_saveState'); // Clear old run
+
+        // Head over to the dashboard
+        window.location.href = 'game.html';
+      }
+
+      function handleLoadGame() {
+        if (localStorage.getItem('petLife_saveState')) {
+          window.location.href = 'game.html?load=true';
+        } else {
+          alert('No saved game found!');
+        }
+      }
+      
+      // Initialize layout view
+      selectDifficulty('easy');
+    </script>
+  </body>
+</html>
