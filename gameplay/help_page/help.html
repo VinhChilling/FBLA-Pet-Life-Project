@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pet Life - Help</title>
+    <meta name="description" content="Help and information for Pet Life" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="help.css" />
+  </head>
+  <body>
+    <div class="help-container">
+      <!-- Header with back button -->
+      <div class="help-header">
+        <button
+          onclick="goBack()"
+          class="back-button"
+          aria-label="Go back to game"
+        >
+          ← Back to Game
+        </button>
+        <h1>🐶 Help & Information</h1>
+      </div>
+
+      <!-- Tab navigation -->
+      <div class="tab-navigation" role="tablist">
+        <button
+          class="tab-button active"
+          onclick="switchTab('guide')"
+          role="tab"
+          aria-selected="true"
+          aria-controls="guide-tab"
+        >
+          Game Guide
+        </button>
+        <button
+          class="tab-button"
+          onclick="switchTab('qa')"
+          role="tab"
+          aria-selected="false"
+          aria-controls="qa-tab"
+        >
+          Q&A
+        </button>
+        <button
+          class="tab-button"
+          onclick="switchTab('achievements')"
+          role="tab"
+          aria-selected="false"
+          aria-controls="achievements-tab"
+        >
+          🏆 Achievements
+        </button>
+        <button
+          class="tab-button"
+          onclick="switchTab('analytics')"
+          role="tab"
+          aria-selected="false"
+          aria-controls="analytics-tab"
+        >
+          📊 Analytics
+        </button>
+      </div>
+
+      <!-- Game Guide Tab -->
+      <div id="guide-tab" class="tab-content active" role="tabpanel">
+        <div class="help-section">
+          <h2>Purpose/Goal</h2>
+          <p>
+            Welcome to Pet Life! Your mission is to care for your pet while
+            managing your own health, time, and resources. Balance your pet's
+            needs with your personal well-being across multiple days to earn the
+            highest score possible.
+          </p>
+          <p>
+            <strong>Scoring:</strong> You start each day with 100 potential
+            points. Your daily score is reduced based on how well you care for
+            your pet and yourself. The better you balance both, the more points
+            you keep!
+          </p>
+        </div>
+
+        <div class="help-section">
+          <h2>Rules</h2>
+          <div class="rules-grid">
+            <div class="rule-card">
+              <h3>🍖 Feeding</h3>
+              <p>
+                Feed your pet at least <strong>3 times per day</strong>. Each
+                feeding costs $5 and increases energy by 12.
+              </p>
+              <p class="warning">
+                ⚠️ If unfed: -35 energy, -20 health, pet becomes Hungry
+              </p>
+            </div>
+
+            <div class="rule-card">
+              <h3>🎾 Playing</h3>
+              <p>
+                Play with your pet at least <strong>4 times per day</strong>.
+                Each play session costs 1 hour.
+              </p>
+              <p class="warning">
+                ⚠️ If not played enough: -20 energy, -15 health, pet becomes
+                Bored
+              </p>
+            </div>
+
+            <div class="rule-card">
+              <h3>Cleaning</h3>
+              <p>
+                Clean your pet <strong>once per day</strong>. Costs $3 and 2
+                hours. Improves health by 5.
+              </p>
+              <p class="warning">
+                ⚠️ If not cleaned: -10 energy, -15 health, pet becomes Dirty
+              </p>
+            </div>
+
+            <div class="rule-card">
+              <h3>Vet Visits</h3>
+              <p>
+                Visit the vet <strong>once per week (every 7 days)</strong>.
+                Costs $30 and 4 hours. Fully restores health to 100.
+              </p>
+              <p class="warning">
+                ⚠️ If missed: -50 energy, -50 health, pet becomes Sick
+              </p>
+            </div>
+
+            <div class="rule-card">
+              <h3>Sleep</h3>
+              <p>
+                Sleep when you're done with daily activities. Average
+                <strong>8+ hours</strong> for best results.
+              </p>
+              <p class="warning">
+                ⚠️ Less than 6h average: -25 health, -25 mood, -20 points
+              </p>
+              <p class="bonus">✓ 8+ hours: +15 health, +15 mood</p>
+            </div>
+
+            <div class="rule-card">
+              <h3>Self-Care</h3>
+              <p>Take care of yourself daily:</p>
+              <ul>
+                <li><strong>Exercise</strong> (2h): +10 health, +10 mood</li>
+                <li><strong>Hangout</strong> (3h): +12 health, +20 mood</li>
+                <li><strong>Read</strong> (1h): +3 health, +5 mood</li>
+              </ul>
+              <p class="warning">⚠️ Skip these to lose points and stats!</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <h2>Currency</h2>
+          <p>
+            <strong>Coins</strong> are your primary currency. You start with 10
+            coins and can earn more by doing chores.
+          </p>
+
+          <div class="currency-table">
+            <div class="currency-row">
+              <span class="action-name">Do Chore</span>
+              <span class="action-cost">-2 hours</span>
+              <span class="action-result">+$8</span>
+            </div>
+            <div class="currency-row">
+              <span class="action-name">Feed Pet</span>
+              <span class="action-cost">-$5</span>
+              <span class="action-result">+12 energy</span>
+            </div>
+            <div class="currency-row">
+              <span class="action-name">Clean Pet</span>
+              <span class="action-cost">-$3, -2h</span>
+              <span class="action-result">+5 health</span>
+            </div>
+            <div class="currency-row">
+              <span class="action-name">Vet Visit</span>
+              <span class="action-cost">-$30, -4h</span>
+              <span class="action-result">100 health</span>
+            </div>
+          </div>
+
+          <p class="tip">
+            <strong>💡 Tip:</strong> Budget wisely! Vet visits are expensive but
+            essential once per week. Do chores regularly to maintain a healthy
+            coin balance.
+          </p>
+        </div>
+
+        <div class="help-section">
+          <h2>Time Management</h2>
+          <p>
+            You have <strong>24 hours</strong> each day. When time runs out, you
+            automatically sleep. Plan your activities carefully to fit
+            everything in!
+          </p>
+        </div>
+
+        <div class="help-section">
+          <h2>Scoring System</h2>
+          <p>
+            You start each day with 100 potential points. Points are deducted
+            for:
+          </p>
+          <ul>
+            <li>Poor sleep habits (6-8h: -10 pts, &lt;6h: -20 pts)</li>
+            <li>Pet health below 80 (-15 pts) or below 50 (-25 pts)</li>
+            <li>Pet energy below 80 (-5 pts) or below 50 (-15 pts)</li>
+            <li>Pet in negative mood state (-10 pts)</li>
+            <li>Not exercising (-10 pts)</li>
+            <li>Not hanging out with friends (-15 pts)</li>
+            <li>Not reading (-5 pts)</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Q&A Tab -->
+      <div
+        id="qa-tab"
+        class="tab-content"
+        role="tabpanel"
+        style="display: none"
+      >
+        <div class="help-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-list" id="faqList">
+            <div class="faq-item">
+              <button class="faq-question" onclick="toggleFAQ(this)">
+                <span>How do I earn more coins?</span>
+                <span class="faq-icon">+</span>
+              </button>
+              <div class="faq-answer">
+                <p>
+                  Do chores to earn $8 per chore. Each chore takes 2 hours. Plan
+                  to do 3-4 chores per day to maintain a healthy coin balance
+                  for feeding, cleaning, and vet visits.
+                </p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question" onclick="toggleFAQ(this)">
+                <span>What happens if my pet's health reaches 0?</span>
+                <span class="faq-icon">+</span>
+              </button>
+              <div class="faq-answer">
+                <p>
+                  Your pet's health is clamped at 0 minimum. While the game
+                  doesn't end, you'll lose significant points each day. Visit
+                  the vet immediately to restore health to 100!
+                </p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question" onclick="toggleFAQ(this)">
+                <span>How many times should I feed my pet?</span>
+                <span class="faq-icon">+</span>
+              </button>
+              <div class="faq-answer">
+                <p>
+                  You must feed your pet at least 3 times per day to avoid
+                  penalties. However, feeding more than 3 times is fine if your
+                  pet needs extra energy!
+                </p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question" onclick="toggleFAQ(this)">
+                <span>When should I visit the vet?</span>
+                <span class="faq-icon">+</span>
+              </button>
+              <div class="faq-answer">
+                <p>
+                  Visit the vet once every 7 days (on days 7, 14, 21, etc.).
+                  Missing a weekly vet visit results in severe penalties: -50
+                  energy and -50 health. The vet costs $30 and 4 hours but fully
+                  restores your pet's health.
+                </p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question" onclick="toggleFAQ(this)">
+                <span>How does sleep affect my score?</span>
+                <span class="faq-icon">+</span>
+              </button>
+              <div class="faq-answer">
+                <p>
+                  Your average sleep hours matter! Less than 6 hours average
+                  causes -20 points, -25 health, and -25 mood daily. 6-8 hours
+                  causes -10 points and small stat losses. 8+ hours gives you
+                  +15 health and +15 mood bonuses!
+                </p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question" onclick="toggleFAQ(this)">
+                <span>Do I need to do all self-care activities every day?</span>
+                <span class="faq-icon">+</span>
+              </button>
+              <div class="faq-answer">
+                <p>
+                  Yes! Exercise, hanging out with friends, and reading all
+                  contribute to your score and well-being. Skipping any of these
+                  results in point deductions and stat penalties.
+                </p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question" onclick="toggleFAQ(this)">
+                <span>What's the best daily routine?</span>
+                <span class="faq-icon">+</span>
+              </button>
+              <div class="faq-answer">
+                <p>
+                  A suggested routine: Do 3-4 chores early (6-8 hours), feed pet
+                  3 times, play with pet 4-6 times (4-6 hours), clean pet once
+                  (2 hours), exercise (2 hours), read (1 hour), hangout with
+                  friends (3 hours). This leaves 2-6 hours for sleep. On day 7,
+                  budget extra time and money for the vet!
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Achievements Tab -->
+      <div id="achievements-tab" class="tab-content" role="tabpanel">
+        <div class="help-section">
+          <h2>🏆 Achievement System</h2>
+          <p>
+            Unlock achievements by completing specific challenges and milestones during your gameplay. 
+            Achievements are categorized into four main groups with different rarity levels.
+          </p>
+
+          <h3>📊 Achievement Categories</h3>
+          
+          <div class="achievement-category">
+            <h4>🐾 Pet Care Mastery</h4>
+            <ul>
+              <li><strong>First Meal</strong> (Common) - Feed your pet for the first time</li>
+              <li><strong>Perfect Feeding</strong> (Rare) - Feed pet 3+ times daily for 7 days</li>
+              <li><strong>Play Master</strong> (Rare) - Play with pet 4+ times daily for 7 days</li>
+              <li><strong>Clean Freak</strong> (Uncommon) - Clean pet daily for 7 days</li>
+              <li><strong>Regular Vet Visits</strong> (Uncommon) - Visit vet every week for 4 weeks</li>
+              <li><strong>Pet Survivor</strong> (Epic) - Keep pet alive for 30 days</li>
+            </ul>
+          </div>
+
+          <div class="achievement-category">
+            <h4>👤 Self-Care Excellence</h4>
+            <ul>
+              <li><strong>First Workout</strong> (Common) - Exercise for the first time</li>
+              <li><strong>Bookworm</strong> (Uncommon) - Read 10+ times</li>
+              <li><strong>Social Butterfly</strong> (Uncommon) - Hang out with friends 15+ times</li>
+              <li><strong>Sleep Champion</strong> (Rare) - Maintain 8+ hours average sleep</li>
+              <li><strong>Health Guru</strong> (Epic) - Maintain 90+ health for 7 days</li>
+              <li><strong>Balanced Life</strong> (Rare) - Exercise, read, and socialize 10+ times each</li>
+            </ul>
+          </div>
+
+          <div class="achievement-category">
+            <h4>💰 Financial Wizard</h4>
+            <ul>
+              <li><strong>First Earnings</strong> (Common) - Earn your first coins</li>
+              <li><strong>Saver</strong> (Uncommon) - Save 50+ coins</li>
+              <li><strong>Wealthy</strong> (Rare) - Accumulate 100+ coins</li>
+              <li><strong>Chores Master</strong> (Uncommon) - Complete 20+ chores</li>
+              <li><strong>Efficient Worker</strong> (Rare) - Maintain 80%+ efficiency</li>
+              <li><strong>Financial Wizard</strong> (Epic) - End with 200+ coins</li>
+            </ul>
+          </div>
+
+          <div class="achievement-category">
+            <h4>⏱️ Time Management</h4>
+            <ul>
+              <li><strong>Week Warrior</strong> (Common) - Survive 7 days</li>
+              <li><strong>Month Master</strong> (Epic) - Survive 30 days</li>
+              <li><strong>Consistent Player</strong> (Rare) - Maintain 70%+ consistency</li>
+              <li><strong>Time Lord</strong> (Epic) - Maintain 90%+ efficiency</li>
+              <li><strong>Speed Runner</strong> (Rare) - Reach 1000+ points in 15 days</li>
+              <li><strong>Legendary Survivor</strong> (Legendary) - Survive 50+ days with 80+ health</li>
+            </ul>
+          </div>
+
+          <h3>🎯 Rarity Levels</h3>
+          <div class="rarity-guide">
+            <div class="rarity-item common">
+              <span class="rarity-color">⚪</span>
+              <strong>Common</strong> - Easy to achieve, great for beginners
+            </div>
+            <div class="rarity-item uncommon">
+              <span class="rarity-color">🟢</span>
+              <strong>Uncommon</strong> - Requires consistent effort
+            </div>
+            <div class="rarity-item rare">
+              <span class="rarity-color">🔵</span>
+              <strong>Rare</strong> - Challenging but achievable
+            </div>
+            <div class="rarity-item epic">
+              <span class="rarity-color">🟣</span>
+              <strong>Epic</strong> - Requires dedication and skill
+            </div>
+            <div class="rarity-item legendary">
+              <span class="rarity-color">🟡</span>
+              <strong>Legendary</strong> - Extremely difficult, expert level
+            </div>
+          </div>
+
+          <h3>💡 Achievement Tips</h3>
+          <ul>
+            <li><strong>Consistency is Key</strong> - Many achievements require daily actions over time</li>
+            <li><strong>Balance Everything</strong> - Don't neglect pet care, self-care, or finances</li>
+            <li><strong>Plan Ahead</strong> - Some achievements require long-term planning (like vet visits)</li>
+            <li><strong>Track Progress</strong> - Use the Analytics Dashboard to monitor your achievement progress</li>
+            <li><strong>Challenge Yourself</strong> - Try to unlock all achievements for maximum points!</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Analytics Tab -->
+      <div id="analytics-tab" class="tab-content" role="tabpanel">
+        <div class="help-section">
+          <h2>📊 Advanced Analytics Dashboard</h2>
+          <p>
+            The Analytics Dashboard provides comprehensive insights into your gameplay performance, 
+            helping you understand your strengths and areas for improvement.
+          </p>
+
+          <h3>🎯 Dashboard Features</h3>
+          
+          <div class="feature-section">
+            <h4>📈 Overview Tab</h4>
+            <p>Get a quick snapshot of your overall performance with:</p>
+            <ul>
+              <li>Overall grade and performance metrics</li>
+              <li>Pet and player statistics summary</li>
+              <li>Financial overview and efficiency rates</li>
+              <li>Activity frequency analysis</li>
+              <li>Performance recommendations</li>
+            </ul>
+          </div>
+
+          <div class="feature-section">
+            <h4>📊 Performance Tab</h4>
+            <p>Dive deep into your performance with:</p>
+            <ul>
+              <li><strong>Interactive Charts</strong> - Visual representations of health, mood, and score trends</li>
+              <li><strong>Activity Distribution</strong> - Bar charts showing your most/least frequent activities</li>
+              <li><strong>Progress Bars</strong> - Visual indicators for feeding, playing, and self-care consistency</li>
+              <li><strong>Statistical Analysis</strong> - Average daily scores, peak performance days, improvement rates</li>
+              <li><strong>Efficiency Metrics</strong> - Time management and consistency analysis</li>
+            </ul>
+          </div>
+
+          <div class="feature-section">
+            <h4>🏆 Achievements Tab</h4>
+            <p>Track your achievement progress with:</p>
+            <ul>
+              <li>Achievement completion percentage and progress bars</li>
+              <li>Rarity-based achievement tracking</li>
+              <li>Category-wise achievement breakdown</li>
+              <li>Milestone timeline showing major accomplishments</li>
+              <li>Unlock status for all 24 available achievements</li>
+            </ul>
+          </div>
+
+          <div class="feature-section">
+            <h4>📋 Reports Tab</h4>
+            <p>Generate comprehensive reports with:</p>
+            <ul>
+              <li><strong>Custom Reports</strong> - Choose report type, format, and date range</li>
+              <li><strong>Quick Reports</strong> - Pre-formatted reports for immediate insights</li>
+              <li><strong>Export Options</strong> - Download reports in JSON, CSV, or text format</li>
+              <li><strong>Share Functionality</strong> - Share reports via system sharing options</li>
+              <li><strong>Multiple Report Types</strong> - Comprehensive, Pet Care, Self-Care, Financial, Performance</li>
+            </ul>
+          </div>
+
+          <h3>📈 Understanding the Metrics</h3>
+          
+          <div class="metric-explanation">
+            <h4>Performance Grades</h4>
+            <ul>
+              <li><strong>A+</strong> (90+) - Outstanding performance</li>
+              <li><strong>A</strong> (85-89) - Excellent performance</li>
+              <li><strong>B+</strong> (80-84) - Good performance</li>
+              <li><strong>B</strong> (75-79) - Above average</li>
+              <li><strong>C+</strong> (70-74) - Average performance</li>
+              <li><strong>C</strong> (65-69) - Below average</li>
+              <li><strong>D</strong> (60-64) - Poor performance</li>
+              <li><strong>F</strong> (&lt;60) - Failing performance</li>
+            </ul>
+          </div>
+
+          <div class="metric-explanation">
+            <h4>Efficiency Rate</h4>
+            <p>Measures how effectively you use your available time for productive activities. 
+            Higher rates indicate better time management and task completion.</p>
+          </div>
+
+          <div class="metric-explanation">
+            <h4>Consistency Index</h4>
+            <p>Tracks how regularly you perform essential activities. 
+            Consistency is key to long-term success in Pet Life.</p>
+          </div>
+
+          <div class="metric-explanation">
+            <h4>Improvement Rate</h4>
+            <p>Shows your performance trend over time. 
+            Helps identify whether you're getting better or need to adjust your strategy.</p>
+          </div>
+
+          <h3>🎯 How to Use Analytics for Improvement</h3>
+          <ul>
+            <li><strong>Review Daily</strong> - Check your overview tab after each game session</li>
+            <li><strong>Analyze Trends</strong> - Use performance charts to identify patterns</li>
+            <li><strong>Set Goals</strong> - Use metrics to set specific improvement targets</li>
+            <li><strong>Track Progress</strong> - Monitor achievement completion over time</li>
+            <li><strong>Export Data</strong> - Save reports for long-term progress tracking</li>
+          </ul>
+
+          <h3>📊 Report Types Explained</h3>
+          
+          <div class="report-types">
+            <div class="report-type">
+              <h4>📋 Executive Summary</h4>
+              <p>Quick overview of key performance indicators and recommendations</p>
+            </div>
+            
+            <div class="report-type">
+              <h4>📈 Detailed Analysis</h4>
+              <p>Comprehensive breakdown of all statistics and performance metrics</p>
+            </div>
+            
+            <div class="report-type">
+              <h4>⚖️ Performance Comparison</h4>
+              <p>Side-by-side comparison with optimal performance benchmarks</p>
+            </div>
+            
+            <div class="report-type">
+              <h4>💡 Recommendations</h4>
+              <p>Personalized suggestions based on your specific performance data</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="blockedWords.js"></script>
+    <script src="api.js"></script>
+    <script src="help.js"></script>
+  </body>
+</html>

@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pet Life - Entrance</title>
+    <meta
+      name="description"
+      content="Choose your player, pet, pet type, and difficulty before starting Pet Life."
+    />
+    <link rel="stylesheet" href="../shared/style.css" />
+    <link rel="stylesheet" href="entrance.css" />
+  </head>
+  <body class="entrance-page">
+    <div
+      id="errorNotification"
+      class="error-notification"
+      role="alert"
+      aria-live="assertive"
+      aria-hidden="true"
+    >
+      <div class="error-content">
+        <span id="errorMessage"></span>
+        <button id="retryBtn" class="retry-button" style="display: none">
+          Retry
+        </button>
+        <button id="dismissBtn" class="dismiss-button" type="button">
+          Dismiss
+        </button>
+      </div>
+    </div>
+
+    <main class="entrance-shell">
+      <section class="entrance-card" aria-labelledby="entranceTitle">
+        <div class="entrance-header">
+          <a class="text-link" href="../start_page/start.html">Start Page</a>
+          <a class="text-link" href="../help_page/help.html">Help Page</a>
+        </div>
+
+        <div id="setup">
+          <div class="setup-header">
+            <h1 id="entranceTitle">Welcome to Pet Life!</h1>
+            <p>Set up your run, then begin balancing pet care and daily life.</p>
+          </div>
+
+          <div class="setup-grid">
+            <div class="setup-fields">
+              <div class="setup-section">
+                <label for="playerNameInput">Your Name</label>
+                <input
+                  type="text"
+                  id="playerNameInput"
+                  placeholder="Enter your name"
+                  aria-label="Player name input"
+                  maxlength="20"
+                />
+                <div class="input-hint" id="playerNameRules">
+                  Name rules: 1-20 chars. Allowed: letters, numbers, space, -,
+                  _, '. Reserved words are not allowed.
+                </div>
+              </div>
+
+              <div class="setup-section">
+                <label for="petNameInput">Pet Name</label>
+                <input
+                  type="text"
+                  id="petNameInput"
+                  placeholder="Name your pet"
+                  aria-label="Pet name input"
+                  maxlength="20"
+                />
+                <div class="input-hint" id="petNameRules">
+                  Name rules: 1-20 chars. Allowed: letters, numbers, space, -,
+                  _, '. Reserved words are not allowed.
+                </div>
+              </div>
+
+              <div class="setup-section">
+                <label for="petType">Pet Type</label>
+                <select
+                  id="petType"
+                  aria-label="Pet type selection"
+                  onchange="updatePetPreview()"
+                >
+                  <option value="Dog">Dog</option>
+                  <option value="Cat">Cat</option>
+                  <option value="Dragon">Dragon</option>
+                </select>
+              </div>
+
+              <div class="setup-section">
+                <label>Difficulty</label>
+                <div class="difficulty-buttons">
+                  <button
+                    type="button"
+                    class="difficulty-btn"
+                    id="easyBtn"
+                    onclick="selectDifficulty('easy')"
+                  >
+                    Easy
+                  </button>
+                  <button
+                    type="button"
+                    class="difficulty-btn"
+                    id="normalBtn"
+                    onclick="selectDifficulty('normal')"
+                  >
+                    Normal
+                  </button>
+                  <button
+                    type="button"
+                    class="difficulty-btn"
+                    id="hardBtn"
+                    onclick="selectDifficulty('hard')"
+                  >
+                    Hard
+                  </button>
+                </div>
+                <p id="difficultyInfo" class="difficulty-info">
+                  Normal: Start with $10
+                </p>
+              </div>
+            </div>
+
+            <aside class="pet-preview-container" aria-live="polite">
+              <div id="petPreview" class="pet-preview"></div>
+              <p id="petPreviewText">Dog - Friendly and loyal</p>
+            </aside>
+          </div>
+
+          <div class="setup-buttons">
+            <button
+              onclick="handleStartGame()"
+              aria-label="Start game"
+              class="primary-btn"
+              type="button"
+            >
+              Start Game
+            </button>
+            <button
+              onclick="handleLoadGame()"
+              aria-label="Load saved game"
+              class="secondary-btn"
+              id="loadBtn"
+              type="button"
+            >
+              Load Game
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="../shared/blockedWords.js"></script>
+    <script src="../shared/api.js"></script>
+    <script src="entrance.js"></script>
+  </body>
+</html>

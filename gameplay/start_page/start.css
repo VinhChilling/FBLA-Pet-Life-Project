@@ -1,0 +1,144 @@
+.start-page .start-shell {
+  width: min(1100px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 0 40px;
+}
+
+.start-hero {
+  min-height: calc(100vh - 150px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.95fr);
+  align-items: center;
+  gap: 28px;
+}
+
+.start-copy,
+.hero-media,
+.info-band article {
+  background: var(--card-bg);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.12);
+}
+
+.start-copy {
+  padding: clamp(24px, 5vw, 56px);
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  color: var(--accent-500);
+  font-size: 0.95rem;
+}
+
+.start-copy h1 {
+  margin: 0;
+  font-size: clamp(3.4rem, 10vw, 7.5rem);
+  line-height: 0.88;
+  color: #0f172a;
+}
+
+.hero-text {
+  max-width: 620px;
+  margin: 22px 0 0;
+  color: var(--muted);
+  font-size: clamp(1rem, 2.2vw, 1.35rem);
+  line-height: 1.45;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.primary-link,
+.secondary-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 22px;
+  text-decoration: none;
+  border: 1px solid var(--accent-500);
+  color: #0f172a;
+}
+
+.primary-link {
+  background: var(--accent-400);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.18);
+}
+
+.secondary-link {
+  background: #fff;
+  color: var(--accent-500);
+}
+
+.hero-media {
+  min-height: 420px;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  overflow: hidden;
+}
+
+.logo-mark {
+  width: min(280px, 70%);
+  height: auto;
+  object-fit: contain;
+}
+
+.pet-lineup {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: end;
+  gap: 12px;
+  width: min(420px, 100%);
+  margin-top: 24px;
+}
+
+.pet-lineup img {
+  width: 100%;
+  max-height: 150px;
+  object-fit: contain;
+}
+
+.info-band {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.info-band article {
+  min-height: 170px;
+  padding: 22px;
+}
+
+.info-band h2 {
+  margin: 0 0 10px;
+  color: var(--accent-500);
+}
+
+.info-band p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+@media (max-width: 850px) {
+  .start-hero,
+  .info-band {
+    grid-template-columns: 1fr;
+  }
+
+  .start-hero {
+    min-height: auto;
+    padding-top: 20px;
+  }
+
+  .hero-media {
+    min-height: 320px;
+  }
+}
