@@ -1,7 +1,6 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <link href="" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pet Life</title>
@@ -387,6 +386,7 @@
       <!-- ===== RIGHT COLUMN: Pet Visualization ===== -->
       <div class="pet-column">
         <h2 id="petName" aria-live="polite">Fluffy</h2>
+        <div id="evolutionBadge" class="evolution-badge-wrap"></div>
 
         <!-- Pet visual with mood indicator and expressions -->
         <div id="petImage" class="pet-visual" aria-hidden="true">
@@ -488,6 +488,7 @@
 
     <script src="../shared/blockedWords.js"></script>
     <script src="../shared/api.js"></script>
+    <script src="../shared/evolution.js"></script>
     <script src="script.js"></script>
     <script src="game_bootstrap.js"></script>
   </body>

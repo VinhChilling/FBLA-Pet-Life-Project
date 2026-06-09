@@ -17,7 +17,11 @@ function readSetupPayload() {
 }
 
 function goToEntrance() {
-  window.location.href = "../entrance_page/entrance.html";
+  if (window.apiNavigation && typeof apiNavigation.goToEntrance === 'function') {
+    apiNavigation.goToEntrance();
+  } else {
+    window.location.href = "../entrance_page/entrance.html";
+  }
 }
 
 async function bootGamePage() {
@@ -26,6 +30,21 @@ async function bootGamePage() {
   if (params.get("load") === "true") {
     await loadGame();
     return;
+  }
+
+  if (params.get("new") === "true") {
+    const setup = readSetupPayload();
+    if (setup) {
+      setSetupField("playerNameInput", setup.playerName || "Player");
+      setSetupField("petNameInput", setup.petName || "Fluffy");
+      setSetupField("petType", setup.petType || "Dog");
+      if (typeof selectDifficulty === "function") {
+        selectDifficulty(setup.difficulty || "normal");
+      }
+      localStorage.removeItem(SETUP_STORAGE_KEY);
+      startGameInternal();
+      return;
+    }
   }
 
   const setup = readSetupPayload();

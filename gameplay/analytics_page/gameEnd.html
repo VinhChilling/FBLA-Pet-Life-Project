@@ -4,18 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game Analytics Dashboard - Pet Life Simulator</title>
+    <link rel="stylesheet" href="../shared/style.css">
     <link rel="stylesheet" href="gameEnd.css">
 </head>
 <body>
     <div class="end-container">
+        <div id="demoBanner" class="demo-banner" style="display: none;">
+            Showing sample analytics — complete a game to see your real results.
+        </div>
+
         <!-- Header -->
         <header class="dashboard-header">
             <div class="header-content">
-                <button id="backBtn" class="back-btn">
+                <button id="backBtn" class="back-btn" type="button">
                     <span class="back-icon">←</span>
-                    Back to Game
+                    Back to Entrance
                 </button>
-                <h1 class="dashboard-title">📊 Analytics Dashboard</h1>
+                <div class="dashboard-brand">
+                    <img src="../../images/FBLAVirtualPetLogoTemp.PNG" alt="Pet Life logo" class="dashboard-logo">
+                    <h1 class="dashboard-title">Analytics Dashboard</h1>
+                </div>
                 <div class="header-stats">
                     <div class="stat-badge">
                         <span class="badge-label">Days</span>
@@ -58,6 +66,7 @@
                     <div class="stat-card summary-card">
                         <h2>🎮 Game Summary</h2>
                         <div class="summary-content">
+                            <div id="petSummaryImage" class="pet-summary-image" aria-hidden="true"></div>
                             <div class="summary-row">
                                 <span class="summary-label">Pet:</span>
                                 <span class="summary-value" id="petName">-</span>
@@ -219,6 +228,19 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Evolution Journey Card -->
+                    <div class="stat-card evolution-journey-card">
+                        <h2>🌟 Evolution Journey</h2>
+                        <p class="evolution-final-stage">Final stage: <span id="finalEvolutionStage">-</span></p>
+                        <div id="evolutionJourney" class="evolution-journey-grid"></div>
+                    </div>
+
+                    <!-- Narrative Summary -->
+                    <div class="stat-card summary-text-card">
+                        <h2>📝 Summary</h2>
+                        <p id="summaryText" class="summary-text">-</p>
+                    </div>
                 </div>
             </section>
 
@@ -306,6 +328,7 @@
                     <div class="stat-card achievements-list-card">
                         <h2>🎖️ All Achievements</h2>
                         <div id="achievementCards" class="achievement-cards"></div>
+                        <div id="milestoneList" class="milestone-list"></div>
                     </div>
                 </div>
             </section>
@@ -382,8 +405,17 @@
                 </div>
             </section>
         </main>
+
+        <footer class="dashboard-footer">
+            <button id="playAgainBtn" class="btn-primary" type="button">Play Again</button>
+            <button id="viewHelpBtn" class="btn-secondary" type="button">View Help</button>
+            <button id="exportAllBtn" class="btn-secondary" type="button">Export All Data</button>
+        </footer>
     </div>
 
+    <script src="../shared/blockedWords.js"></script>
+    <script src="../shared/api.js"></script>
+    <script src="../shared/evolution.js"></script>
     <script src="gameEnd.js"></script>
 </body>
 </html>

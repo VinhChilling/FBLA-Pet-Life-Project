@@ -4,8 +4,21 @@
 
 // ===== GLOBAL VARIABLES =====
 let gameStats = null;
-let currentView = 'overview';
+let currentView = "overview";
 let achievementSystem = null;
+let isDemoMode = false;
+let currentReportContent = "";
+
+const DASHBOARD_ASSETS = {
+  images: "../../images/",
+  fonts: "../../fonts/",
+};
+
+const PET_IMAGES = {
+  Dog: `${DASHBOARD_ASSETS.images}dog.png`,
+  Cat: `${DASHBOARD_ASSETS.images}cat.png`,
+  Dragon: `${DASHBOARD_ASSETS.images}dragon.png`,
+};
 
 // ===== ACHIEVEMENT SYSTEM =====
 const ACHIEVEMENTS = {
@@ -46,26 +59,67 @@ const ACHIEVEMENTS = {
 // ===== DATA ANALYSIS MODULES =====
 
 /**
- * Load and validate game statistics from localStorage
- * @returns {Object|null} Game statistics object or null if not found
+ * Sample stats so the dashboard is usable even without a completed game.
  */
-function loadGameStats() {
-  const savedStats = localStorage.getItem("gameEndStats");
-
-  if (!savedStats) {
-    // No stats found - redirect back to game
-    if (window.apiNavigation && typeof apiNavigation.goToMainGame === 'function') {
-      apiNavigation.goToMainGame();
-    } else {
-      window.location.href = "index.html";
-    }
-    return null;
+function createDemoGameStats() {
+  const dailyStats = [];
+  for (let day = 1; day <= 10; day += 1) {
+    dailyStats.push({
+      day,
+      pet: {
+        health: 70 + day * 2,
+        energy: 65 + day,
+        mood: day % 2 === 0 ? "Happy" : "Content",
+      },
+      player: {
+        health: 75 + day,
+        mood: 70 + day,
+        currentPoints: day * 85,
+      },
+    });
   }
 
-  const stats = JSON.parse(savedStats);
-  console.log("Loaded game stats:", stats);
-  
-  // Ensure all required fields exist with proper defaults
+  return {
+    pet: {
+      name: "Fluffy",
+      type: "Dog",
+      mood: "Happy",
+      energy: 82,
+      health: 88,
+      timesFed: 32,
+      timesPlayed: 41,
+      timesCleaned: 10,
+      timesVisitedVet: 2,
+      timesDoingChores: 8,
+      evolutionStage: 2,
+      evolutionHistory: [
+        { stage: 0, day: 1 },
+        { stage: 1, day: 3 },
+        { stage: 2, day: 8 },
+      ],
+    },
+    player: {
+      name: "Player",
+      currentPoints: 850,
+      health: 85,
+      mood: 80,
+      coins: 42,
+      expenses: 58,
+      avgSleepHours: 7.5,
+      timesWorked: 6,
+      timesStudied: 4,
+      timesExercised: 8,
+      timesSlept: 10,
+      timesRead: 5,
+      timesHangout: 4,
+    },
+    finalDay: 11,
+    endMessage: "Demo data — play a full game to see your real results!",
+    dailyStats,
+  };
+}
+
+function normalizeGameStats(stats) {
   if (stats.pet) {
     stats.pet.timesFed = stats.pet.timesFed || 0;
     stats.pet.timesPlayed = stats.pet.timesPlayed || 0;
@@ -75,8 +129,11 @@ function loadGameStats() {
     stats.pet.health = stats.pet.health || 0;
     stats.pet.mood = stats.pet.mood || "Happy";
     stats.pet.energy = stats.pet.energy || 0;
+    stats.pet.evolutionStage = stats.pet.evolutionStage ?? 0;
+    stats.pet.evolutionHistory =
+      stats.pet.evolutionHistory || [{ stage: 0, day: 1 }];
   }
-  
+
   if (stats.player) {
     stats.player.timesWorked = stats.player.timesWorked || 0;
     stats.player.timesStudied = stats.player.timesStudied || 0;
@@ -91,9 +148,42 @@ function loadGameStats() {
     stats.player.avgSleepHours = stats.player.avgSleepHours || 7;
     stats.player.currentPoints = stats.player.currentPoints || 0;
   }
-  
-  gameStats = stats;
+
+  if (!Array.isArray(stats.dailyStats)) stats.dailyStats = [];
   return stats;
+}
+
+/**
+ * Load and validate game statistics from localStorage
+ * @returns {Object|null} Game statistics object or null if not found
+ */
+function loadGameStats() {
+  const savedStats = localStorage.getItem("gameEndStats");
+  isDemoMode = false;
+
+  if (!savedStats) {
+    isDemoMode = true;
+    gameStats = normalizeGameStats(createDemoGameStats());
+    showDemoBanner(true);
+    return gameStats;
+  }
+
+  try {
+    gameStats = normalizeGameStats(JSON.parse(savedStats));
+    showDemoBanner(false);
+    return gameStats;
+  } catch (error) {
+    console.error("Invalid gameEndStats payload:", error);
+    isDemoMode = true;
+    gameStats = normalizeGameStats(createDemoGameStats());
+    showDemoBanner(true);
+    return gameStats;
+  }
+}
+
+function showDemoBanner(show) {
+  const banner = document.getElementById("demoBanner");
+  if (banner) banner.style.display = show ? "block" : "none";
 }
 
 /**
@@ -291,13 +381,27 @@ function drawAxes(ctx, padding, width, height) {
  */
 function generateChartData(stats) {
   const { pet, player, finalDay, dailyStats } = stats;
-  const daysPlayed = finalDay - 1;
-  
-  // Generate simulated daily data (in a real implementation, this would use actual daily tracking)
-  const healthData = generateSimulatedData(daysPlayed, 50, 100, pet.health || 50);
-  const moodData = generateSimulatedData(daysPlayed, 30, 100, player.mood || 50);
-  const scoreData = generateSimulatedData(daysPlayed, 0, 150, player.currentPoints || 0);
-  
+  const daysPlayed = Math.max(1, finalDay - 1);
+
+  let healthData = [];
+  let moodData = [];
+  let scoreData = [];
+
+  if (Array.isArray(dailyStats) && dailyStats.length > 0) {
+    healthData = dailyStats.map((d) => d.pet?.health ?? 0);
+    moodData = dailyStats.map((d) => {
+      const mood = d.pet?.mood;
+      if (typeof mood === "number") return mood;
+      const moodMap = { Happy: 90, Content: 80, Excited: 95, Sick: 40, Hungry: 50 };
+      return moodMap[mood] ?? 70;
+    });
+    scoreData = dailyStats.map((d) => d.player?.currentPoints ?? 0);
+  } else {
+    healthData = generateSimulatedData(daysPlayed, 50, 100, pet.health || 50);
+    moodData = generateSimulatedData(daysPlayed, 30, 100, player.mood || 50);
+    scoreData = generateSimulatedData(daysPlayed, 0, 150, player.currentPoints || 0);
+  }
+
   return {
     health: healthData,
     mood: moodData,
@@ -308,8 +412,8 @@ function generateChartData(stats) {
       cleaning: pet.timesCleaned || 0,
       exercise: player.timesExercised || 0,
       reading: player.timesRead || 0,
-      hanging: player.timesHangout || 0
-    }
+      hanging: player.timesHangout || 0,
+    },
   };
 }
 
@@ -322,6 +426,8 @@ function generateChartData(stats) {
  * @returns {Array} Simulated data array
  */
 function generateSimulatedData(days, min, max, final) {
+  if (days <= 0) return [final];
+
   const data = [];
   const range = max - min;
   
@@ -340,50 +446,44 @@ function generateSimulatedData(days, min, max, final) {
 
 // ===== UI FUNCTIONS =====
 
+function setDashboardText(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
 /**
  * Switch between different analytics views
  * @param {string} viewName - View name to show
  */
 function showView(viewName) {
-  console.log('showView called with:', viewName); // Debug line
-  
-  // Hide all views
-  document.querySelectorAll('.analytics-view').forEach(view => {
-    view.classList.remove('active');
+  document.querySelectorAll(".view").forEach((view) => {
+    view.style.display = "none";
+    view.classList.remove("active");
   });
-  
-  // Remove active class from all buttons
-  document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.classList.remove('active');
+
+  document.querySelectorAll(".tab-btn").forEach((btn) => {
+    btn.classList.remove("active");
   });
-  
-  // Show selected view
-  const selectedView = document.getElementById(viewName + 'View');
-  const selectedBtn = document.getElementById(viewName + 'Btn');
-  
-  console.log('Selected view element:', selectedView); // Debug line
-  console.log('Selected button element:', selectedBtn); // Debug line
-  
+
+  const selectedView = document.getElementById(`${viewName}View`);
+  const selectedBtn = document.querySelector(`.tab-btn[data-view="${viewName}"]`);
+
   if (selectedView) {
-    selectedView.classList.add('active');
-  } else {
-    console.error('View element not found:', viewName + 'View');
+    selectedView.style.display = "block";
+    selectedView.classList.add("active");
   }
-  
+
   if (selectedBtn) {
-    selectedBtn.classList.add('active');
-  } else {
-    console.error('Button element not found:', viewName + 'Btn');
+    selectedBtn.classList.add("active");
   }
-  
+
   currentView = viewName;
-  
-  // Initialize view-specific content
-  if (viewName === 'performance') {
+
+  if (viewName === "performance") {
     initializePerformanceView();
-  } else if (viewName === 'achievements') {
+  } else if (viewName === "achievements") {
     initializeAchievementsView();
-  } else if (viewName === 'reports') {
+  } else if (viewName === "reports") {
     initializeReportsView();
   }
 }
@@ -394,66 +494,84 @@ function showView(viewName) {
 function displayStats() {
   const stats = loadGameStats();
   if (!stats) return;
-  
-  console.log("Displaying stats:", stats);
 
   const { pet, player, finalDay, endMessage } = stats;
-  
-  // Update header
-  document.getElementById("endMessage").textContent = endMessage;
-  
-  // Determine if it's a win or loss
-  const isWin = endMessage.includes("Congratulations");
-  document.getElementById("endTitle").textContent = isWin
-    ? "🎉 Victory! Advanced Analytics Dashboard"
-    : "💔 Game Over - Performance Analysis";
-
-  // Calculate advanced metrics
   const metrics = calculateAdvancedMetrics(stats);
-  
-  // Pet Statistics
-  document.getElementById("petName").textContent = pet.name || "Unknown";
-  document.getElementById("petType").textContent = pet.type || "Unknown";
-  document.getElementById("petHealth").textContent = pet.health || 0;
-  document.getElementById("petEnergy").textContent = pet.energy || 0;
-  document.getElementById("petMood").textContent = pet.mood || "Unknown";
-
-  // Player Statistics
-  document.getElementById("daysSurvived").textContent = finalDay - 1;
-  document.getElementById("playerHealth").textContent = player.health || 0;
-  document.getElementById("playerMood").textContent = player.mood || 0;
-  document.getElementById("finalScore").textContent = player.currentPoints || 0;
-  document.getElementById("avgSleep").textContent = (player.avgSleepHours || 0).toFixed(1) + " hours";
-
-  // Financial Report
-  document.getElementById("coinsRemaining").textContent = "$" + (player.coins || 0);
-  document.getElementById("totalExpenses").textContent = "$" + (player.expenses || 0);
-  document.getElementById("choresCount").textContent = pet.timesDoingChores || 0;
-  document.getElementById("efficiencyRate").textContent = metrics.efficiencyRate.toFixed(1) + "%";
-
-  // Pet Care Activities
-  document.getElementById("timesFed").textContent = pet.timesFed || 0;
-  document.getElementById("timesPlayed").textContent = pet.timesPlayed || 0;
-  document.getElementById("timesCleaned").textContent = pet.timesCleaned || 0;
-  document.getElementById("vetVisits").textContent = pet.timesVisitedVet || 0;
-
-  // Player Activities
-  document.getElementById("timesExercised").textContent = player.timesExercised || 0;
-  document.getElementById("timesHangout").textContent = player.timesHangout || 0;
-  document.getElementById("timesRead").textContent = player.timesRead || 0;
-  document.getElementById("selfCareScore").textContent = metrics.selfCareScore.toFixed(0);
-
-  // Performance Metrics
-  document.getElementById("overallGrade").textContent = metrics.overallGrade;
-  document.getElementById("petCareRating").textContent = metrics.petCareRating;
-  document.getElementById("selfCareRating").textContent = metrics.selfCareRating;
-
-  // Generate summary
-  generateAdvancedSummary(stats, metrics);
-  
-  // Initialize achievements
   achievementSystem = checkAchievements(stats);
-  console.log("Achievement system:", achievementSystem);
+
+  const daysPlayed = Math.max(0, (finalDay || 1) - 1);
+
+  setDashboardText("endMessage", endMessage || "Game complete");
+  setDashboardText("finalDay", daysPlayed);
+  setDashboardText("playerPoints", player.currentPoints || 0);
+  setDashboardText("petName", pet.name || "Unknown");
+  setDashboardText("petType", pet.type || "Unknown");
+  setDashboardText("playerName", player.name || "Player");
+  setDashboardText("petHealth", pet.health || 0);
+  setDashboardText("petEnergy", pet.energy || 0);
+  setDashboardText("petMood", pet.mood || "Unknown");
+  setDashboardText("playerHealth", player.health || 0);
+  setDashboardText("playerMood", player.mood || 0);
+  setDashboardText("playerCoins", player.coins || 0);
+  setDashboardText(
+    "avgSleep",
+    `${(player.avgSleepHours || 0).toFixed(1)}h`,
+  );
+
+  setDashboardText("timesFed", pet.timesFed || 0);
+  setDashboardText("timesPlayed", pet.timesPlayed || 0);
+  setDashboardText("timesCleaned", pet.timesCleaned || 0);
+  setDashboardText("feedCount", pet.timesFed || 0);
+  setDashboardText("playCount", pet.timesPlayed || 0);
+  setDashboardText("cleanCount", pet.timesCleaned || 0);
+  setDashboardText("vetCount", pet.timesVisitedVet || 0);
+  setDashboardText("workCount", player.timesWorked || 0);
+  setDashboardText("studyCount", player.timesStudied || 0);
+  setDashboardText("exerciseCount", player.timesExercised || 0);
+  setDashboardText("sleepCount", player.timesSlept || 0);
+
+  setDashboardText("overallGrade", metrics.overallGrade);
+  setDashboardText("petCareRating", metrics.petCareRating);
+  setDashboardText("selfCareRating", metrics.selfCareRating);
+
+  const stage =
+    typeof getEvolutionStage === "function"
+      ? getEvolutionStage(pet.evolutionStage ?? 0)
+      : null;
+  setDashboardText(
+    "finalEvolutionStage",
+    stage ? `${stage.emoji} ${stage.name}` : "Egg",
+  );
+
+  if (typeof renderEvolutionJourney === "function") {
+    renderEvolutionJourney(
+      pet.evolutionHistory,
+      "evolutionJourney",
+      pet.type,
+      PET_IMAGES,
+    );
+  }
+
+  updatePetSummaryImage(pet.type, pet.evolutionStage ?? 0);
+
+  generateAdvancedSummary(stats, metrics);
+  initializeAchievementsView();
+}
+
+function updatePetSummaryImage(petType, stageId) {
+  const container = document.getElementById("petSummaryImage");
+  if (!container) return;
+
+  if (typeof buildEvolutionImageHtml === "function") {
+    container.innerHTML = buildEvolutionImageHtml(
+      petType,
+      stageId,
+      PET_IMAGES,
+      "pet-summary-img",
+    );
+  } else {
+    container.innerHTML = `<img src="${PET_IMAGES[petType] || PET_IMAGES.Dog}" alt="${petType}" class="pet-summary-img">`;
+  }
 }
 
 /**
@@ -464,6 +582,7 @@ function displayStats() {
 function generateAdvancedSummary(stats, metrics) {
   const { pet, player, finalDay } = stats;
   const summaryEl = document.getElementById("summaryText");
+  if (!summaryEl) return;
 
   let summary = "";
   
@@ -520,16 +639,15 @@ function initializePerformanceView() {
   const metrics = calculateAdvancedMetrics(gameStats);
   
   // Update statistical analysis
-  document.getElementById("avgDailyScore").textContent = metrics.avgDailyScore.toFixed(1);
-  document.getElementById("peakDay").textContent = `Day ${Math.floor(Math.random() * (gameStats.finalDay - 1)) + 1}`;
-  document.getElementById("improvementRate").textContent = metrics.improvementRate;
-  document.getElementById("efficiencyScore").textContent = metrics.efficiencyRate.toFixed(1) + "%";
-  document.getElementById("consistencyIndex").textContent = metrics.consistencyIndex.toFixed(1) + "%";
-  
-  // Update activity distribution
+  setDashboardText("avgDailyScore", metrics.avgDailyScore.toFixed(1));
+  setDashboardText("peakDay", `Day ${Math.max(1, gameStats.finalDay - 1)}`);
+  setDashboardText("improvementRate", metrics.improvementRate);
+  setDashboardText("efficiencyScore", `${metrics.efficiencyRate.toFixed(1)}%`);
+  setDashboardText("consistencyIndex", `${metrics.consistencyIndex.toFixed(1)}%`);
+
   const activities = chartData.activities;
   const totalActivities = Object.values(activities).reduce((sum, val) => sum + val, 0);
-  document.getElementById("totalActivities").textContent = totalActivities;
+  setDashboardText("totalActivities", totalActivities);
   
   // Find most and least frequent activities
   let mostFrequent = 'Feeding';
@@ -548,8 +666,8 @@ function initializePerformanceView() {
     }
   });
   
-  document.getElementById("mostFrequent").textContent = mostFrequent;
-  document.getElementById("leastFrequent").textContent = leastFrequent;
+  setDashboardText("mostFrequent", mostFrequent);
+  setDashboardText("leastFrequent", leastFrequent);
   
   // Update progress bars
   updateProgressBar("feedingProgress", "feedingPercent", metrics.feedingConsistency);
@@ -576,91 +694,80 @@ function updateProgressBar(barId, textId, percentage) {
   }
 }
 
+function prepareCanvas(canvas) {
+  if (!canvas) return null;
+  const rect = canvas.getBoundingClientRect();
+  const width = Math.max(320, Math.floor(rect.width || canvas.clientWidth || 640));
+  const height = Math.max(220, Math.floor(rect.height || canvas.clientHeight || 320));
+  canvas.width = width;
+  canvas.height = height;
+  return canvas.getContext("2d");
+}
+
 /**
- * Draw simple charts (placeholder implementation)
+ * Draw simple charts
  * @param {Object} chartData - Chart data
  */
 function drawSimpleCharts(chartData) {
-  // This is a simplified implementation
-  // In production, would use a proper charting library like Chart.js
-  
   const performanceCanvas = document.getElementById("performanceChart");
-  const activityCanvas = document.getElementById("activityChart");
-  
-  if (performanceCanvas) {
-    const ctx = performanceCanvas.getContext("2d");
+  const ctx = prepareCanvas(performanceCanvas);
+  if (ctx) {
     drawLineChart(ctx, chartData.health, chartData.mood, chartData.score);
-  }
-  
-  if (activityCanvas) {
-    const ctx = activityCanvas.getContext("2d");
-    drawBarChart(ctx, chartData.activities);
   }
 }
 
 /**
  * Draw line chart
- * @param {CanvasRenderingContext2D} ctx - Canvas context
- * @param {Array} healthData - Health data
- * @param {Array} moodData - Mood data
- * @param {Array} scoreData - Score data
  */
 function drawLineChart(ctx, healthData, moodData, scoreData) {
   const width = ctx.canvas.width;
   const height = ctx.canvas.height;
-  
-  // Clear canvas
+  const padding = 36;
+  const chartWidth = width - padding * 2;
+  const chartHeight = height - padding * 2;
+
   ctx.clearRect(0, 0, width, height);
-  
-  // Draw grid
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, width, height);
+
   ctx.strokeStyle = "#e2e8f0";
   ctx.lineWidth = 1;
-  for (let i = 0; i <= 5; i++) {
+  for (let i = 0; i <= 5; i += 1) {
     const y = padding + (chartHeight / 5) * i;
     ctx.beginPath();
     ctx.moveTo(padding, y);
-    ctx.lineTo(canvas.width - padding, y);
+    ctx.lineTo(width - padding, y);
     ctx.stroke();
   }
-  
-  // Draw health line
-  drawDataLine(ctx, healthData, "#10b981", width, height);
-  
-  // Draw mood line
-  drawDataLine(ctx, moodData, "#f59e0b", width, height);
+
+  drawAxes(ctx, padding, chartWidth, chartHeight);
+  drawDataLine(ctx, healthData, "#10b981", padding, chartWidth, chartHeight);
+  drawDataLine(ctx, moodData, "#f59e0b", padding, chartWidth, chartHeight);
+  drawDataLine(ctx, scoreData, "#2563eb", padding, chartWidth, chartHeight);
 }
 
 /**
  * Draw data line
- * @param {CanvasRenderingContext2D} ctx - Canvas context
- * @param {Array} data - Data array
- * @param {string} color - Line color
- * @param {number} width - Canvas width
- * @param {number} height - Canvas height
  */
-function drawDataLine(ctx, data, color, width, height) {
-  if (data.length < 2) return;
-  
+function drawDataLine(ctx, data, color, padding, chartWidth, chartHeight) {
+  if (!Array.isArray(data) || data.length < 2) return;
+
   ctx.strokeStyle = color;
   ctx.lineWidth = 2;
   ctx.beginPath();
-  
-  const xStep = width / (data.length - 1);
-  const maxValue = Math.max(...data);
-  const minValue = Math.min(...data);
+
+  const xStep = chartWidth / (data.length - 1);
+  const maxValue = Math.max(...data, 1);
+  const minValue = Math.min(...data, 0);
   const range = maxValue - minValue || 1;
-  
+
   data.forEach((value, index) => {
-    const x = index * xStep;
-    const y = height - ((value - minValue) / range) * height;
-    
-    if (index === 0) {
-      ctx.moveTo(x, y);
-    } else {
-      ctx.lineTo(x, y);
-    }
+    const x = padding + index * xStep;
+    const y = padding + chartHeight - ((value - minValue) / range) * chartHeight;
+    if (index === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
   });
-  
+
   ctx.stroke();
 }
 
@@ -693,49 +800,29 @@ function drawBarChart(ctx, activities) {
   });
 }
 /**
- * Initialize achievements view
+ * Generate achievement cards for the achievements tab
  */
-function initializeAchievementsView() {
-  if (!achievementSystem) return;
-  
-  // Display achievements by category
-  displayAchievementsByCategory('petCareAchievements', ACHIEVEMENTS.petCare, achievementSystem.unlocked);
-  displayAchievementsByCategory('selfCareAchievements', ACHIEVEMENTS.selfCare, achievementSystem.unlocked);
-  displayAchievementsByCategory('financialAchievements', ACHIEVEMENTS.financial, achievementSystem.unlocked);
-  displayAchievementsByCategory('timeAchievements', ACHIEVEMENTS.timeManagement, achievementSystem.unlocked);
-  
-  // Update achievement statistics
-  document.getElementById("totalAchievements").textContent = achievementSystem.unlocked.length;
-  document.getElementById("rareAchievements").textContent = achievementSystem.rare;
-  document.getElementById("achievementProgress").textContent = achievementSystem.completionRate.toFixed(0) + "%";
-  document.getElementById("achievementBarFill").style.width = achievementSystem.completionRate + "%";
-  
-  // Generate milestones
-  generateMilestones();
-}
+function generateAchievementCards() {
+  const container = document.getElementById("achievementCards");
+  if (!container || !achievementSystem) return;
 
-/**
- * Display achievements by category
- * @param {string} containerId - Container element ID
- * @param {Array} achievements - Achievement definitions
- * @param {Array} unlocked - Unlocked achievements
- */
-function displayAchievementsByCategory(containerId, achievements, unlocked) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  
+  const allAchievements = Object.values(ACHIEVEMENTS).flat();
   container.innerHTML = "";
-  
-  achievements.forEach(achievement => {
-    const isUnlocked = unlocked.find(a => a.id === achievement.id);
-    const achievementEl = document.createElement("div");
-    achievementEl.className = `achievement ${isUnlocked ? "unlocked" : "locked"}`;
-    achievementEl.innerHTML = `
-      <span>${achievement.icon}</span>
-      <span>${achievement.name}</span>
-      <span class="achievement-desc">${achievement.description}</span>
-    `;
-    container.appendChild(achievementEl);
+
+  allAchievements.forEach((achievement) => {
+    const isUnlocked = achievementSystem.unlocked.find(
+      (a) => a.id === achievement.id,
+    );
+    const card = document.createElement("div");
+    card.className = `achievement ${isUnlocked ? "unlocked" : "locked"}`;
+    card.innerHTML = `
+      <span class="achievement-icon">${achievement.icon}</span>
+      <div class="achievement-info">
+        <div class="achievement-name">${achievement.name}</div>
+        <div class="achievement-desc">${achievement.description}</div>
+        <div class="achievement-rarity">${achievement.rarity}</div>
+      </div>`;
+    container.appendChild(card);
   });
 }
 
@@ -751,7 +838,7 @@ function generateMilestones() {
   // Game milestones
   milestones.push({
     date: `Day 1`,
-    description: "Started your journey with ${pet.name}",
+    description: `Started your journey with ${pet.name}`,
     completed: true
   });
   
@@ -814,15 +901,14 @@ function initializeReportsView() {
  * Generate custom report based on user selection
  */
 function generateCustomReport() {
-  const reportType = document.getElementById("reportType").value;
-  const reportFormat = document.getElementById("reportFormat").value;
-  const dateRange = document.getElementById("dateRange").value;
-  
+  const reportType = document.getElementById("reportType")?.value || "complete";
+  const reportFormat = document.getElementById("reportFormat")?.value || "txt";
+
   if (!gameStats) return;
-  
-  let reportData = generateReportData(reportType, dateRange);
-  let formattedReport = formatReport(reportData, reportFormat, reportType);
-  
+
+  const reportData = generateReportData(reportType, "all");
+  const formattedReport = formatReport(reportData, reportFormat, reportType);
+
   displayReportPreview(formattedReport);
   showReportActions();
 }
@@ -894,13 +980,33 @@ function generateReportData(type, range) {
         }
       };
       
-    case 'performance':
+    case "performance":
       return {
         ...baseData,
         performance: calculateAdvancedMetrics(gameStats),
-        charts: generateChartData(gameStats)
+        charts: generateChartData(gameStats),
       };
-      
+
+    case "activities":
+      return {
+        ...baseData,
+        activities: generateChartData(gameStats).activities,
+      };
+
+    case "achievements":
+      return {
+        ...baseData,
+        achievements: achievementSystem,
+      };
+
+    case "complete":
+      return {
+        ...baseData,
+        overview: calculateAdvancedMetrics(gameStats),
+        achievements: achievementSystem,
+        performance: generateChartData(gameStats),
+      };
+
     default:
       return baseData;
   }
@@ -914,16 +1020,17 @@ function generateReportData(type, range) {
  * @returns {string} Formatted report
  */
 function formatReport(data, format, type) {
-  switch (format) {
-    case 'json':
+  const outputFormat = format === "pdf" ? "txt" : format;
+  switch (outputFormat) {
+    case "json":
       return JSON.stringify(data, null, 2);
-      
-    case 'csv':
+
+    case "csv":
       return formatAsCSV(data, type);
-      
-    case 'txt':
+
+    case "txt":
       return formatAsText(data, type);
-      
+
     default:
       return JSON.stringify(data, null, 2);
   }
@@ -1008,10 +1115,17 @@ function formatAsText(data, type) {
  * @param {string} report - Formatted report
  */
 function displayReportPreview(report) {
+  currentReportContent = report;
   const preview = document.getElementById("reportPreview");
   if (preview) {
-    preview.textContent = report;
+    preview.innerHTML = `<pre class="report-preview-text">${escapeHtml(report)}</pre>`;
   }
+}
+
+function escapeHtml(text) {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
 }
 
 /**
@@ -1034,22 +1148,55 @@ function generateQuickReport(reportType) {
   let report = "";
   
   switch (reportType) {
-    case 'summary':
+    case "performance":
       report = generateExecutiveSummary();
       break;
-    case 'detailed':
+    case "activities":
       report = generateDetailedAnalysis();
       break;
-    case 'comparison':
+    case "achievements":
+      report = generateAchievementsReport();
+      break;
+    case "summary":
+      report = generateExecutiveSummary();
+      break;
+    case "detailed":
+      report = generateDetailedAnalysis();
+      break;
+    case "comparison":
       report = generatePerformanceComparison();
       break;
-    case 'recommendations':
+    case "recommendations":
       report = generateRecommendations();
       break;
   }
   
   displayReportPreview(report);
   showReportActions();
+}
+
+/**
+ * Generate achievements-focused report
+ */
+function generateAchievementsReport() {
+  if (!gameStats || !achievementSystem) return "No achievement data available.";
+
+  let report = `ACHIEVEMENT REPORT - Pet Life\n`;
+  report += `=====================================\n\n`;
+  report += `Completion Rate: ${achievementSystem.completionRate.toFixed(1)}%\n`;
+  report += `Unlocked: ${achievementSystem.unlocked.length} / ${achievementSystem.total}\n`;
+  report += `Rare Unlocked: ${achievementSystem.rare}\n\n`;
+
+  report += `UNLOCKED ACHIEVEMENTS:\n`;
+  if (!achievementSystem.unlocked.length) {
+    report += `- None yet\n`;
+  } else {
+    achievementSystem.unlocked.forEach((a) => {
+      report += `- ${a.icon} ${a.name} (${a.rarity}): ${a.description}\n`;
+    });
+  }
+
+  return report;
 }
 
 /**
@@ -1296,13 +1443,22 @@ function generateRecommendations() {
  * Download current report
  */
 function downloadReport() {
-  const reportContent = document.getElementById("reportPreview").textContent;
-  const reportType = document.getElementById("reportType").value;
-  const reportFormat = document.getElementById("reportFormat").value;
-  
+  const reportContent =
+    currentReportContent ||
+    document.getElementById("reportPreview")?.textContent ||
+    "";
+  if (!reportContent.trim()) {
+    alert("Generate a report first.");
+    return;
+  }
+
+  const reportType = document.getElementById("reportType")?.value || "complete";
+  let reportFormat = document.getElementById("reportFormat")?.value || "txt";
+  if (reportFormat === "pdf") reportFormat = "txt";
+
   const blob = new Blob([reportContent], { type: getContentType(reportFormat) });
   const url = URL.createObjectURL(blob);
-  
+
   const a = document.createElement("a");
   a.href = url;
   a.download = `pet-life-report-${reportType}-${Date.now()}.${reportFormat}`;
@@ -1330,15 +1486,23 @@ function getContentType(format) {
  * Share report (placeholder implementation)
  */
 function shareReport() {
-  const reportContent = document.getElementById("reportPreview").textContent;
-  
-  // In a real implementation, this would share via email, social media, etc.
-  // For now, we'll copy to clipboard
-  navigator.clipboard.writeText(reportContent).then(() => {
-    alert("Report copied to clipboard! You can now paste and share it.");
-  }).catch(() => {
-    alert("Unable to copy report. Please copy manually.");
-  });
+  const reportContent =
+    currentReportContent ||
+    document.getElementById("reportPreview")?.textContent ||
+    "";
+  if (!reportContent.trim()) {
+    alert("Generate a report first.");
+    return;
+  }
+
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard
+      .writeText(reportContent)
+      .then(() => alert("Report copied to clipboard! You can now paste and share it."))
+      .catch(() => alert("Unable to copy report. Please copy manually."));
+  } else {
+    alert("Clipboard unavailable. Please copy the report manually.");
+  }
 }
 
 /**
@@ -1373,24 +1537,19 @@ function exportAllData() {
  * Restart the game
  */
 function restartGame() {
-  // Clear saved stats
   localStorage.removeItem("gameEndStats");
-  // Redirect to main game
-  if (window.apiNavigation && typeof apiNavigation.goToMainGame === 'function') {
-    apiNavigation.goToMainGame();
+  if (window.apiNavigation && typeof apiNavigation.goToEntrance === "function") {
+    apiNavigation.goToEntrance();
   } else {
-    window.location.href = "index.html";
+    window.location.href = "../entrance_page/entrance.html";
   }
 }
 
-/**
- * View help page
- */
 function viewHelp() {
-  if (window.apiNavigation && typeof apiNavigation.goToHelp === 'function') {
+  if (window.apiNavigation && typeof apiNavigation.goToHelp === "function") {
     apiNavigation.goToHelp();
   } else {
-    window.location.href = "help.html";
+    window.location.href = "../help_page/help.html";
   }
 }
 
@@ -1465,95 +1624,58 @@ function initializeAchievementsView() {
 }
 
 /**
- * Initialize page when DOM is loaded
+ * Wire dashboard controls and navigation
  */
+function wireDashboardEvents() {
+  document.querySelectorAll(".tab-btn").forEach((btn) => {
+    btn.addEventListener("click", () => showView(btn.dataset.view));
+  });
+
+  document.getElementById("backBtn")?.addEventListener("click", () => {
+    if (window.apiNavigation && typeof apiNavigation.goToEntrance === "function") {
+      apiNavigation.goToEntrance();
+    } else {
+      window.location.href = "../entrance_page/entrance.html";
+    }
+  });
+
+  document.getElementById("playAgainBtn")?.addEventListener("click", () => {
+    localStorage.removeItem("gameEndStats");
+    if (window.apiNavigation && typeof apiNavigation.goToEntrance === "function") {
+      apiNavigation.goToEntrance();
+    } else {
+      window.location.href = "../entrance_page/entrance.html";
+    }
+  });
+
+  document.getElementById("viewHelpBtn")?.addEventListener("click", () => {
+    if (window.apiNavigation && typeof apiNavigation.goToHelp === "function") {
+      apiNavigation.goToHelp();
+    } else {
+      window.location.href = "../help_page/help.html";
+    }
+  });
+
+  document.getElementById("generateReportBtn")?.addEventListener("click", generateCustomReport);
+
+  document.querySelectorAll(".quick-report-btn").forEach((btn) => {
+    btn.addEventListener("click", () => generateQuickReport(btn.dataset.reportType));
+  });
+
+  document.querySelector("#reportActions .download-btn")?.addEventListener("click", downloadReport);
+  document.querySelector("#reportActions .share-btn")?.addEventListener("click", shareReport);
+  document.getElementById("exportAllBtn")?.addEventListener("click", exportAllData);
+}
+
 window.addEventListener("DOMContentLoaded", () => {
-  displayStats();
-  
-  // Test the showView function
-  console.log('Testing showView function...');
-  setTimeout(() => {
-    console.log('Attempting to switch to performance view...');
-    showView('performance');
-  }, 2000);
-  
-  // Initialize tooltips and interactions
+  wireDashboardEvents();
+  try {
+    displayStats();
+    showView("overview");
+  } catch (error) {
+    console.error("Dashboard initialization error:", error);
+  }
   initializeInteractions();
-  
-  // Add manual chart drawing trigger for debugging
-  window.drawChartsManually = function() {
-    console.log("=== MANUAL CHART DRAWING TRIGGERED ===");
-    drawPerformanceTrends();
-    drawActivityDistribution();
-  };
-  
-  // Add window-level chart testing
-  window.testCharts = function() {
-    console.log("Testing chart elements...");
-    const perfCanvas = document.getElementById('performanceChart');
-    const actCanvas = document.getElementById('activityChart');
-    console.log("Performance canvas:", perfCanvas);
-    console.log("Activity canvas:", actCanvas);
-    
-    if (perfCanvas) {
-      console.log("Performance canvas dimensions:", perfCanvas.offsetWidth, "x", perfCanvas.offsetHeight);
-      console.log("Performance canvas context:", perfCanvas.getContext('2d'));
-      
-      // Simple test drawing
-      const ctx = perfCanvas.getContext('2d');
-      ctx.fillStyle = '#ff0000';
-      ctx.fillRect(10, 10, 100, 100);
-      console.log("Drew red test square on performance chart");
-    }
-    
-    if (actCanvas) {
-      console.log("Activity canvas dimensions:", actCanvas.offsetWidth, "x", actCanvas.offsetHeight);
-      console.log("Activity canvas context:", actCanvas.getContext('2d'));
-      
-      // Simple test drawing
-      const ctx = actCanvas.getContext('2d');
-      ctx.fillStyle = '#00ff00';
-      ctx.fillRect(10, 10, 100, 100);
-      console.log("Drew green test square on activity chart");
-    }
-  };
-  
-  // Add simple chart test
-  window.testSimpleChart = function() {
-    console.log("=== SIMPLE CHART TEST ===");
-    const canvas = document.getElementById('performanceChart');
-    if (!canvas) {
-      console.error("Canvas not found!");
-      return;
-    }
-    
-    const ctx = canvas.getContext('2d');
-    canvas.width = 400;
-    canvas.height = 300;
-    
-    // Clear and draw simple test
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, 400, 300);
-    
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(50, 250);
-    ctx.lineTo(350, 250);
-    ctx.stroke();
-    
-    ctx.beginPath();
-    ctx.moveTo(50, 250);
-    ctx.lineTo(50, 50);
-    ctx.stroke();
-    
-    ctx.fillStyle = '#ff0000';
-    ctx.fillRect(100, 150, 50, 50);
-    
-    console.log("Simple test chart drawn!");
-  };
-  
-  console.log("Manual chart testing available: drawChartsManually(), testCharts(), and testSimpleChart()");
 });
 
 /**
@@ -1590,3 +1712,5 @@ window.generateQuickReport = generateQuickReport;
 window.downloadReport = downloadReport;
 window.shareReport = shareReport;
 window.exportAllData = exportAllData;
+window.restartGame = restartGame;
+window.viewHelp = viewHelp;

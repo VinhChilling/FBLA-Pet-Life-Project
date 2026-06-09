@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pet Life - Help</title>
     <meta name="description" content="Help and information for Pet Life" />
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="../shared/style.css" />
     <link rel="stylesheet" href="help.css" />
   </head>
   <body>
@@ -32,6 +32,15 @@
           aria-controls="guide-tab"
         >
           Game Guide
+        </button>
+        <button
+          class="tab-button"
+          onclick="switchTab('evolution')"
+          role="tab"
+          aria-selected="false"
+          aria-controls="evolution-tab"
+        >
+          🌟 Evolution
         </button>
         <button
           class="tab-button"
@@ -213,6 +222,33 @@
             <li>Not exercising (-10 pts)</li>
             <li>Not hanging out with friends (-15 pts)</li>
             <li>Not reading (-5 pts)</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Evolution Tab -->
+      <div id="evolution-tab" class="tab-content" role="tabpanel" style="display: none">
+        <div class="help-section">
+          <h2>Pet Evolution System</h2>
+          <p>
+            Your pet evolves as you survive more days and keep their health strong.
+            Each stage changes your pet's appearance with visual effects — nurture
+            them well to reach the legendary form!
+          </p>
+        </div>
+
+        <div class="help-section">
+          <h2>Evolution Stages</h2>
+          <div class="evolution-stages-help" id="evolutionStagesHelp"></div>
+        </div>
+
+        <div class="help-section">
+          <h2>Tips for Evolution</h2>
+          <ul>
+            <li>Keep pet health above stage thresholds to unlock higher forms.</li>
+            <li>Feed, play, and clean daily — neglected pets evolve slower.</li>
+            <li>Reach day 25+ with 75+ health to unlock the Legendary stage.</li>
+            <li>Your evolution journey appears on the Analytics dashboard after each run.</li>
           </ul>
         </div>
       </div>
@@ -556,8 +592,9 @@
       </div>
     </div>
 
-    <script src="blockedWords.js"></script>
-    <script src="api.js"></script>
+    <script src="../shared/blockedWords.js"></script>
+    <script src="../shared/api.js"></script>
+    <script src="../shared/evolution.js"></script>
     <script src="help.js"></script>
   </body>
 </html>

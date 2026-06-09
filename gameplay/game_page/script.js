@@ -22,7 +22,8 @@ function recordDailyStats() {
       timesPlayed: pet.timesPlayed,
       timesCleaned: pet.timesCleaned,
       timesVisitedVet: pet.timesVisitedVet,
-      timesDoingChores: pet.timesDoingChores
+      timesDoingChores: pet.timesDoingChores,
+      evolutionStage: pet.evolutionStage ?? 0,
     },
     player: {
       health: player.health,
@@ -65,6 +66,10 @@ let pet = {
   timesCleaned: 0,
   timesVisitedVet: 0,
   timesDoingChores: 0,
+
+  // Evolution tracking
+  evolutionStage: 0,
+  evolutionHistory: [{ stage: 0, day: 1 }],
 };
 
 // Player object: manages time, money, health, and scoring
@@ -271,11 +276,45 @@ const petImages = {
   Dragon: "../../images/dragon.png",
 };
 
-// Update main pet display with image
-function updateMainPetImage(petType) {
+// Update main pet display with image and evolution styling
+function updateMainPetImage(petType, stageId) {
   const mainPetContainer = document.getElementById("mainPetImage");
-  if (mainPetContainer) {
+  if (!mainPetContainer) return;
+
+  const stage = stageId ?? pet.evolutionStage ?? 0;
+  if (typeof buildEvolutionImageHtml === "function") {
+    mainPetContainer.innerHTML = buildEvolutionImageHtml(
+      petType,
+      stage,
+      petImages,
+      "pet-main-img",
+    );
+  } else {
     mainPetContainer.innerHTML = `<img src="${petImages[petType]}" alt="${petType}" class="pet-main-img">`;
+  }
+
+  if (typeof renderEvolutionBadge === "function") {
+    renderEvolutionBadge(stage, "evolutionBadge");
+  }
+}
+
+function checkEvolution() {
+  if (typeof getEvolutionStageForDay !== "function") return;
+
+  const target = getEvolutionStageForDay(player.currentDay, pet.health);
+  const current = pet.evolutionStage ?? 0;
+
+  if (target.id > current) {
+    pet.evolutionStage = target.id;
+    if (!Array.isArray(pet.evolutionHistory)) {
+      pet.evolutionHistory = [{ stage: 0, day: 1 }];
+    }
+    pet.evolutionHistory.push({ stage: target.id, day: player.currentDay });
+    updateMainPetImage(pet.type, pet.evolutionStage);
+    showNotification(
+      `${pet.name} evolved into ${target.emoji} ${target.name}!`,
+      "Success",
+    );
   }
 }
 
@@ -359,6 +398,8 @@ function startGameInternal() {
   player.name = validatedPlayer;
   pet.name = validatedPet;
   pet.type = document.getElementById("petType").value;
+  pet.evolutionStage = 0;
+  pet.evolutionHistory = [{ stage: 0, day: 1 }];
   dailyStats = [];
 
   // Reset stats based on difficulty
@@ -379,7 +420,7 @@ function startGameInternal() {
   document.getElementById("petTypeDisplay").textContent = pet.type;
 
   // Set pet image based on type
-  updateMainPetImage(pet.type);
+  updateMainPetImage(pet.type, pet.evolutionStage);
 
   pet.gameStarted = true;
   updateDayDisplay();
@@ -441,6 +482,8 @@ function applyGameStateDefaults() {
     timesCleaned: 0,
     timesVisitedVet: 0,
     timesDoingChores: 0,
+    evolutionStage: 0,
+    evolutionHistory: [{ stage: 0, day: 1 }],
     ...pet,
   };
 
@@ -526,10 +569,11 @@ async function loadGame() {
     if (!gameData) {
       const savedData = localStorage.getItem("petGameSave");
       if (!savedData) {
-        showErrorNotification(
-          "❌ No saved game found. Starting new game.",
-          null,
-        );
+        if (window.apiNavigation && typeof apiNavigation.goToEntrance === "function") {
+          apiNavigation.goToEntrance();
+        } else {
+          window.location.href = "../entrance_page/entrance.html";
+        }
         return;
       }
       gameData = JSON.parse(savedData);
@@ -566,7 +610,7 @@ async function loadGame() {
     document.getElementById("petTypeDisplay").textContent = pet.type;
 
     // Set pet image
-    updateMainPetImage(pet.type);
+    updateMainPetImage(pet.type, pet.evolutionStage ?? 0);
 
     updateDayDisplay();
     updateStats();
@@ -700,6 +744,7 @@ function dayTick() {
   recordDailyStats();
 
   player.currentDay++;
+  checkEvolution();
   updateDayDisplay();
   processSleepHours();
 
@@ -1825,7 +1870,11 @@ function endGameLoss() {
       messageDiv.style.opacity = "0";
 
       setTimeout(() => {
-        window.location.href = "../analytics_page/gameEnd.html";
+        if (window.apiNavigation && typeof apiNavigation.goToGameEnd === 'function') {
+          apiNavigation.goToGameEnd();
+        } else {
+          window.location.href = "../analytics_page/gameEnd.html";
+        }
       }, 1000);
     }, 3000);
   }, 500);

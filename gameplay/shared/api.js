@@ -4,11 +4,22 @@
  * localStorage when opened directly from the filesystem or when offline.
  */
 
+function resolveApiBaseUrl() {
+  if (window.location.protocol === "file:") return null;
+
+  const override = localStorage.getItem("PET_LIFE_API_BASE");
+  if (override) return override;
+
+  // Static frontend (e.g. port 3000) with separate backend on 8000
+  if (window.location.port && window.location.port !== "8000") {
+    return `${window.location.protocol}//127.0.0.1:8000/api/v1`;
+  }
+
+  return `${window.location.origin}/api/v1`;
+}
+
 const API_CONFIG = {
-  BASE_URL:
-    window.location.protocol === "file:"
-      ? null
-      : `${window.location.origin}/api/v1`,
+  BASE_URL: resolveApiBaseUrl(),
   TIMEOUT: 10000,
   SYNC_INTERVAL: 30000,
 };
@@ -463,7 +474,16 @@ const apiNavigation = {
     this.navigateToPage(this.routes.analytics, true);
   },
 
-  goToMainGame() {
+  goToMainGame(load = false) {
+    const destination = load ? this.routes.gameLoad : this.routes.game;
+    this.navigateToPage(destination, false);
+  },
+
+  goToNewGame() {
+    this.navigateToPage(this.routes.game, false);
+  },
+
+  goToLoadGame() {
     this.navigateToPage(this.routes.gameLoad, false);
   },
 };

@@ -5,13 +5,21 @@
 
 // ===== NAVIGATION =====
 
-// Return to main game (index.html)
+// Return to main game or entrance
 function goBack() {
-  // Use API navigation if available, otherwise fallback
-  if (window.apiNavigation && typeof apiNavigation.goToMainGame === 'function') {
-    apiNavigation.goToMainGame();
+  const hasSave =
+    Boolean(localStorage.getItem("petGameSave")) ||
+    Boolean(localStorage.getItem("petGameSave_slot1"));
+
+  if (hasSave && window.apiNavigation && typeof apiNavigation.goToLoadGame === "function") {
+    apiNavigation.goToLoadGame();
+    return;
+  }
+
+  if (window.apiNavigation && typeof apiNavigation.goToEntrance === "function") {
+    apiNavigation.goToEntrance();
   } else {
-    window.location.href = "index.html";
+    window.location.href = "../entrance_page/entrance.html";
   }
 }
 
@@ -92,53 +100,23 @@ async function submitQuestion() {
   }
 
   try {
-    // Check if storage is available
-    if (typeof window.storage === "undefined") {
-      showStatus(
-        "✓ Question noted: " +
-          question.substring(0, 50) +
-          "... (Storage not available, question saved locally)",
-        "success"
-      );
-      textarea.value = "";
-      return;
-    }
-
-    // Store question using persistent storage
     const timestamp = Date.now();
-    const questionKey = `question:${timestamp}`;
     const questionData = {
       text: question,
-      timestamp: timestamp,
+      timestamp,
       date: new Date().toLocaleDateString(),
     };
 
-    // Save to storage (shared so all users can see community questions)
-    const result = await window.storage.set(
-      questionKey,
-      JSON.stringify(questionData),
-      true
-    );
+    const existing = JSON.parse(localStorage.getItem("petLifeQuestions") || "[]");
+    existing.unshift(questionData);
+    localStorage.setItem("petLifeQuestions", JSON.stringify(existing.slice(0, 20)));
 
-    if (result) {
-      showStatus(
-        "✓ Question submitted successfully! Thank you for your feedback.",
-        "success"
-      );
-      textarea.value = "";
-
-      // Refresh the questions list
-      loadUserQuestions();
-    } else {
-      showStatus("Failed to submit question. Please try again.", "error");
-    }
+    showStatus("✓ Question submitted successfully! Thank you for your feedback.", "success");
+    textarea.value = "";
+    loadUserQuestions();
   } catch (error) {
     console.error("Storage error:", error);
-    showStatus(
-      "✓ Question noted: " + question.substring(0, 50) + "...",
-      "success"
-    );
-    textarea.value = "";
+    showStatus("Failed to submit question. Please try again.", "error");
   }
 }
 
@@ -164,19 +142,9 @@ async function loadUserQuestions() {
   if (!container) return;
 
   try {
-    // Check if storage is available
-    if (typeof window.storage === "undefined") {
-      container.innerHTML = `
-        <h3>Community Questions</h3>
-        <p class="no-questions">Storage not available in this environment. Questions cannot be persisted.</p>
-      `;
-      return;
-    }
+    const questions = JSON.parse(localStorage.getItem("petLifeQuestions") || "[]");
 
-    // List all question keys
-    const result = await window.storage.list("question:", true);
-
-    if (!result || !result.keys || result.keys.length === 0) {
+    if (!questions.length) {
       container.innerHTML = `
         <h3>Community Questions</h3>
         <p class="no-questions">No community questions yet. Be the first to ask!</p>
@@ -184,63 +152,49 @@ async function loadUserQuestions() {
       return;
     }
 
-    // Load all questions
-    const questions = [];
-    for (const key of result.keys) {
-      try {
-        const questionResult = await window.storage.get(key, true);
-        if (questionResult && questionResult.value) {
-          const data = JSON.parse(questionResult.value);
-          questions.push(data);
-        }
-      } catch (err) {
-        console.error(`Failed to load question ${key}:`, err);
-      }
-    }
-
-    // Sort by timestamp (newest first)
-    questions.sort((a, b) => b.timestamp - a.timestamp);
-
-    // Display questions
-    const questionsHTML = questions
-      .map(
-        (q) => `
-        <div class="user-question-item">
-          <p><strong>Q:</strong> ${escapeHTML(q.text)}</p>
-          <div class="question-meta">Submitted on ${q.date}</div>
-        </div>
-      `
-      )
-      .join("");
-
-    container.innerHTML = `
-      <h3>Community Questions (${questions.length})</h3>
-      ${questionsHTML}
-    `;
-  } catch (error) {
-    console.error("Failed to load questions:", error);
     container.innerHTML = `
       <h3>Community Questions</h3>
-      <p class="no-questions">Unable to load questions. Storage may not be available.</p>
+      ${questions
+        .map(
+          (q) => `
+        <div class="user-question">
+          <p class="question-text">${escapeHtml(q.text)}</p>
+          <span class="question-date">${q.date || ""}</span>
+        </div>`,
+        )
+        .join("")}
     `;
+  } catch (error) {
+    console.error("Error loading questions:", error);
   }
 }
 
-// Escape HTML to prevent XSS
-function escapeHTML(str) {
+function escapeHtml(text) {
   const div = document.createElement("div");
-  div.textContent = str;
+  div.textContent = text;
   return div.innerHTML;
+}
+
+function renderEvolutionHelpStages() {
+  const container = document.getElementById("evolutionStagesHelp");
+  if (!container || typeof EVOLUTION_STAGES === "undefined") return;
+
+  container.innerHTML = EVOLUTION_STAGES.map(
+    (stage) => `
+    <div class="rule-card">
+      <h3>${stage.emoji} ${stage.name}</h3>
+      <p>${stage.description}</p>
+      <p><strong>Unlocks:</strong> Day ${stage.minDay}+ with ${stage.minHealth}+ health</p>
+    </div>`,
+  ).join("");
 }
 
 // ===== INITIALIZATION =====
 
-// Load questions when page loads
 window.addEventListener("DOMContentLoaded", () => {
-  console.log("Help page loaded successfully");
   loadUserQuestions();
+  renderEvolutionHelpStages();
 
-  // Set aria-expanded on FAQ buttons
   const faqButtons = document.querySelectorAll(".faq-question");
   faqButtons.forEach((btn) => {
     btn.setAttribute("aria-expanded", "false");

@@ -129,14 +129,27 @@ function updatePetPreview() {
   const previewText = document.getElementById("petPreviewText");
 
   if (preview) {
-    preview.innerHTML = `<img src="${PET_IMAGES[type]}" alt="${type}" class="pet-preview-img">`;
+    if (typeof buildEvolutionImageHtml === "function") {
+      preview.innerHTML = buildEvolutionImageHtml(type, 1, PET_IMAGES, "pet-preview-img");
+    } else {
+      preview.innerHTML = `<img src="${PET_IMAGES[type]}" alt="${type}" class="pet-preview-img">`;
+    }
     preview.style.animation = "none";
     setTimeout(() => {
       preview.style.animation = "bounce 0.6s ease";
     }, 10);
   }
 
-  if (previewText) previewText.textContent = PET_DESCRIPTIONS[type] || type;
+  if (previewText) {
+    const stage =
+      typeof getEvolutionStage === "function" ? getEvolutionStage(1) : null;
+    const stageLabel = stage ? `${stage.emoji} ${stage.name}` : "Baby";
+    previewText.textContent = `${PET_DESCRIPTIONS[type] || type} · Starts as ${stageLabel}`;
+  }
+
+  if (typeof renderEvolutionBadge === "function") {
+    renderEvolutionBadge(1, "entranceEvolutionBadge");
+  }
 }
 
 function hasLocalSave() {
@@ -196,7 +209,11 @@ async function handleStartGame() {
   localStorage.removeItem("petGameSave");
   localStorage.removeItem("gameEndStats");
 
-  window.location.href = "../game_page/game.html?new=true";
+  if (window.apiNavigation && typeof apiNavigation.goToNewGame === "function") {
+    apiNavigation.goToNewGame();
+  } else {
+    window.location.href = "../game_page/game.html?new=true";
+  }
 }
 
 function handleLoadGame() {
@@ -207,7 +224,11 @@ function handleLoadGame() {
     return;
   }
 
-  window.location.href = "../game_page/game.html?load=true";
+  if (window.apiNavigation && typeof apiNavigation.goToLoadGame === "function") {
+    apiNavigation.goToLoadGame();
+  } else {
+    window.location.href = "../game_page/game.html?load=true";
+  }
 }
 
 function attachLiveValidation(inputId, hintId, label) {
