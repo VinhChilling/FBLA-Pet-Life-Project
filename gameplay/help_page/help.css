@@ -3,6 +3,23 @@
    Modern, accessible help system with tabs and interactive FAQ
    ============================================================ */
 
+body {
+  background-color: #ebc95a;
+  background-image: url("../../images/striped-bg.png");
+  background-repeat: repeat;
+  background-size: 300px 300px;
+  animation: moveDiagonal 9s linear infinite;
+}
+
+@keyframes moveDiagonal {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 300px 300px;
+  }
+}
+
 /* ===== HELP CONTAINER ===== */
 .help-container {
   max-width: 900px;
@@ -592,15 +609,6 @@
   padding: 12px;
   border: 1px solid #e6eef9;
   border-radius: 8px;
-  font-family:
-    BubblegumSans-Regular,
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
-    "Helvetica Neue",
-    Arial,
-    sans-serif;
   font-size: 0.95rem;
   resize: vertical;
   outline: none;

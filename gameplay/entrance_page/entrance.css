@@ -5,6 +5,23 @@
   padding: 24px;
 }
 
+.entrance-page {
+  background-color: #ebc95a;
+  background-image: url("../../images/striped-bg.png");
+  background-repeat: repeat;
+  background-size: 300px 300px;
+  animation: moveDiagonal 9s linear infinite;
+}
+
+@keyframes moveDiagonal {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 300px 300px;
+  }
+}
+
 .entrance-card {
   width: min(820px, 100%);
   background: var(--card-bg);

@@ -6,15 +6,6 @@
    ANALYTICS DASHBOARD STYLES - Matching Game Design System
    ============================================================ */
 
-/* ===== FONTS ===== */
-@font-face {
-  font-family: "BubblegumSans-Regular";
-  src: url("../../fonts/BubblegumSans-Regular.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
 /* ===== CSS VARIABLES ===== */
 :root {
   --bg-start: #eef6ff;
@@ -33,15 +24,6 @@
 }
 
 body {
-    font-family:
-        BubblegumSans-Regular,
-        system-ui,
-        -apple-system,
-        "Segoe UI",
-        Roboto,
-        "Helvetica Neue",
-        Arial,
-        sans-serif;
     background-color: #ebc95a;
     background-image: url("../../images/striped-bg.png");
     background-repeat: repeat;
@@ -923,9 +905,10 @@ body {
 }
 
 .dashboard-logo {
-    width: 56px;
-    height: 56px;
+    width: 120px;
+    height: 120px;
     object-fit: contain;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
 }
 
 .pet-summary-image {
