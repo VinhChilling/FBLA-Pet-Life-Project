@@ -1090,44 +1090,6 @@ function exercise() {
   }
 }
 
-// End day and trigger sleep cycle with fade animation
-function sleep() {
-  darkOverlay.style.visibility = "visible";
-  setTimeout(() => {
-    darkOverlay.style.opacity = "1";
-    
-    player.timesSlept++;
-    updateActivitySummary(); // Update activity summary in real-time
-    
-    setTimeout(() => {
-      processSleepHours();
-      checkDailyRequirements();
-      player.currentDay++;
-      resetDailyCounters();
-      updateDayDisplay();
-      updatePetStats();
-      updatePlayerStats();
-      updateProgressBars();
-      recordDailyStats(); // Record daily stats for analytics
-      
-      // Check for game over conditions
-      if (checkGameOver()) {
-        return;
-      }
-      
-      // Check for win condition
-      if (checkWinCondition()) {
-        return;
-      }
-      
-      darkOverlay.style.opacity = "0";
-      setTimeout(() => {
-        darkOverlay.style.visibility = "hidden";
-      }, 1000);
-    }, 2000);
-  }, 100);
-}
-
 // Do chores: costs 2 hours, earn $5
 function doChore() {
   if (player.time >= 2) {
@@ -1428,6 +1390,11 @@ function closeTodoModal() {
 
 // End day and trigger sleep cycle with fade animation
 function sleep() {
+  console.log(`=== SLEEP FUNCTION CALLED ===`);
+  console.log(`Current player.time: ${player.time}`);
+  console.log(`Current player.health: ${player.health}`);
+  console.log(`Current player.mood: ${player.mood}`);
+  
   closeTodoModal(); // Ensure to-do modal is closed
   darkOverlay.style.visibility = "visible";
   setTimeout(() => {
@@ -1436,6 +1403,40 @@ function sleep() {
 
   const restPeriodMs = 3000;
   setTimeout(() => {
+    console.log(`Before sleep punishment - player.time: ${player.time}`);
+    
+    // Apply sleep punishment if hours left is 7 or below (BEFORE processing sleep)
+    if (player.time <= 7 && player.time >= 0) {
+      const hoursLeft = player.time;
+      // The lower the hours, the worse the punishment
+      // Scale: 7 hours = light punishment, 0 hours = severe punishment
+      const severity = (7 - hoursLeft) / 7; // 0.0 to 1.0 scale
+      
+      console.log(`Applying sleep punishment - hours left: ${hoursLeft}, severity: ${severity.toFixed(2)}`);
+      
+      // Player penalties (health and mood)
+      const playerHealthLoss = Math.round(10 + (severity * 20)); // 10-30 health loss
+      const playerMoodLoss = Math.round(10 + (severity * 20)); // 10-30 mood loss
+      player.health -= playerHealthLoss;
+      player.mood -= playerMoodLoss;
+      
+      // Pet penalties (health and energy)
+      const petHealthLoss = Math.round(10 + (severity * 25)); // 10-35 health loss
+      const petEnergyLoss = Math.round(15 + (severity * 25)); // 15-40 energy loss
+      pet.health -= petHealthLoss;
+      pet.energy -= petEnergyLoss;
+      
+      pet.mood = "Tired";
+      
+      console.log(`Sleep punishment applied:`);
+      console.log(`  Player health loss: ${playerHealthLoss}, mood loss: ${playerMoodLoss}`);
+      console.log(`  Pet health loss: ${petHealthLoss}, energy loss: ${petEnergyLoss}`);
+      console.log(`  Player health: ${player.health}, mood: ${player.mood}`);
+      console.log(`  Pet health: ${pet.health}, energy: ${pet.energy}`);
+    } else {
+      console.log(`No sleep punishment applied - hours left: ${player.time} (condition: <= 7 && >= 0)`);
+    }
+    
     // Process day evaluation (this modifies health/mood)
     player.timesSlept += 1;
     dayTick();
