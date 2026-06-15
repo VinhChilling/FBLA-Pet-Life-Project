@@ -424,7 +424,9 @@ function startGameInternal() {
 
   pet.gameStarted = true;
   updateDayDisplay();
-  updateStats();
+  updatePetStats();
+  updatePlayerStats();
+  updateProgressBars();
   saveGame();
 }
 
@@ -834,8 +836,10 @@ function calculateDailyScore() {
   // Health/Mood (10): Good health and mood
   if (pet.health >= 80 && pet.mood === "Happy") {
     petCarePoints += 10;
+    player.timesPlayed++;
   } else if (pet.health >= 60) {
     petCarePoints += 5;
+    player.timesPlayed++;
   }
 
   // Cleaning (5): Weekly cleaning (hasCleanedThisWeek or similar)
@@ -1018,11 +1022,10 @@ function feedPet() {
     pet.timesFed++;
     
     updateActivitySummary(); // Update activity summary in real-time
-    updatePlayerStats();
-    updatePetStats();
+    updateStats();
     showNotification(`${pet.name} has been fed! +${food.energyPerFeed} energy`, "Success");
   } else {
-    showNotification("Not enough coins!", "Error");
+    showErrorNotification(`Need $${cost} to feed pet!`, "Dismiss");
   }
 }
 
@@ -1042,11 +1045,10 @@ function playWithPet() {
     pet.timesPlayed++;
     
     updateActivitySummary(); // Update activity summary in real-time
-    updatePlayerStats();
-    updatePetStats();
+    updateStats();
     showNotification(`${pet.name} enjoyed playing with you! +10 energy`, "Success");
   } else {
-    showNotification("Not enough time!", "Error");
+    showErrorNotification("Need 1 hour to play with pet!", "Dismiss");
   }
 }
 
@@ -1062,11 +1064,12 @@ function cleanPet() {
     pet.timesCleaned++;
     
     updateActivitySummary(); // Update activity summary in real-time
-    updatePlayerStats();
-    updatePetStats();
+    updateStats();
     showNotification(`${pet.name} is now clean and happy!`, "Success");
+  } else if (player.coins < 3) {
+    showErrorNotification("Need $3 to clean pet!", "Dismiss");
   } else {
-    showNotification("Not enough coins or time!", "Error");
+    showErrorNotification("Need 2 hours to clean pet!", "Dismiss");
   }
 }
 
@@ -1080,11 +1083,10 @@ function exercise() {
     player.timesExercised++;
     
     updateActivitySummary(); // Update activity summary in real-time
-    updatePlayerStats();
-    updatePetStats();
+    updateStats();
     showNotification("Exercise completed! +10 health, +10 mood", "Success");
   } else {
-    showNotification("Not enough time!", "Error");
+    showErrorNotification("Need 2 hours to exercise!", "Dismiss");
   }
 }
 
@@ -1103,8 +1105,9 @@ function sleep() {
       player.currentDay++;
       resetDailyCounters();
       updateDayDisplay();
-      updatePlayerStats();
       updatePetStats();
+      updatePlayerStats();
+      updateProgressBars();
       recordDailyStats(); // Record daily stats for analytics
       
       // Check for game over conditions
@@ -1133,12 +1136,10 @@ function doChore() {
     pet.timesDoingChores++;
     
     updateActivitySummary(); // Update activity summary in real-time
-    updatePlayerStats();
-    updatePetStats();
+    updateStats();
     showNotification("Chores completed! +$8", "Success");
   } else {
-    showNotification("Not enough time!", "Error");
-    showErrorNotification("Need 2 hours to exercise!", "Dismiss");
+    showErrorNotification("Need 2 hours to do chores!", "Dismiss");
   }
 }
 
@@ -1192,11 +1193,12 @@ function vetVisit() {
     pet.timesVisitedVet++;
     
     updateActivitySummary(); // Update activity summary in real-time
-    updatePlayerStats();
-    updatePetStats();
+    updateStats();
     showNotification(`${pet.name} visited the vet! Health restored`, "Success");
+  } else if (player.coins < 30) {
+    showErrorNotification("Need $30 to visit vet!", "Dismiss");
   } else {
-    showNotification("Not enough coins or time!", "Error");
+    showErrorNotification("Need 4 hours to visit vet!", "Dismiss");
   }
 }
 
@@ -1208,11 +1210,10 @@ function work() {
     player.timesWorked++;
     
     updateActivitySummary(); // Update activity summary in real-time
-    updatePlayerStats();
-    updatePetStats();
+    updateStats();
     showNotification("Work completed! +$15", "Success");
   } else {
-    showNotification("Not enough time!", "Error");
+    showErrorNotification("Need 3 hours to work!", "Dismiss");
   }
 }
 
@@ -1225,11 +1226,10 @@ function study() {
     player.timesStudied++;
     
     updateActivitySummary(); // Update activity summary in real-time
-    updatePlayerStats();
-    updatePetStats();
+    updateStats();
     showNotification("Study completed! +5 health, +10 mood", "Success");
   } else {
-    showNotification("Not enough time!", "Error");
+    showErrorNotification("Need 2 hours to study!", "Dismiss");
   }
 }
 
@@ -1468,12 +1468,6 @@ function sleep() {
 
 // Master update function called after every action
 function updateStats() {
-  // Auto-sleep if time runs out
-  if (player.time <= 0) {
-    sleep();
-    return;
-  }
-
   // Update pet mood based on energy
   if (pet.energy <= 50) {
     pet.mood = "Bored";
@@ -1481,6 +1475,12 @@ function updateStats() {
   updatePetStats();
   updatePlayerStats();
   updateProgressBars();
+
+  // Auto-sleep if time runs out (after updating bars)
+  if (player.time <= 0) {
+    sleep();
+    return;
+  }
 
   if (
     pet.energy <= 0 ||
@@ -1497,73 +1497,93 @@ function updateStats() {
 
 // Update pet stat displays
 function updatePetStats() {
-  const energyTextEl = document.getElementById("energyText");
-  if (energyTextEl) energyTextEl.textContent = clamp(pet.energy);
+  try {
+    const energyTextEl = document.getElementById("energyText");
+    if (energyTextEl) energyTextEl.textContent = clamp(pet.energy);
 
-  const healthEl = document.getElementById("health");
-  if (healthEl) healthEl.textContent = clamp(pet.health);
+    const healthEl = document.getElementById("health");
+    if (healthEl) healthEl.textContent = clamp(pet.health);
 
-  const moodEmojiEl = document.getElementById("petMoodEmoji");
-  if (moodEmojiEl) moodEmojiEl.textContent = moodToEmoji(pet.mood);
+    const moodEmojiEl = document.getElementById("petMoodEmoji");
+    if (moodEmojiEl) moodEmojiEl.textContent = moodToEmoji(pet.mood);
 
-  // Update mood description
-  const moodDescEl = document.getElementById("moodDescription");
-  if (moodDescEl) moodDescEl.textContent = getMoodDescription(pet.mood);
+    // Update mood description
+    const moodDescEl = document.getElementById("moodDescription");
+    if (moodDescEl) moodDescEl.textContent = getMoodDescription(pet.mood);
 
-  // Update pet expression
-  updatePetExpression();
+    // Update pet expression
+    updatePetExpression();
+  } catch (error) {
+    console.error("Error updating pet stats:", error);
+  }
 }
 
 // Update player stat displays
 function updatePlayerStats() {
-  const coinsEl = document.getElementById("coins");
-  if (coinsEl) coinsEl.textContent = player.coins;
+  try {
+    const coinsEl = document.getElementById("coins");
+    if (coinsEl) coinsEl.textContent = player.coins;
 
-  const expensesEl = document.getElementById("expenses");
-  if (expensesEl) expensesEl.textContent = player.expenses;
+    const expensesEl = document.getElementById("expenses");
+    if (expensesEl) expensesEl.textContent = player.expenses;
 
-  const timeEl = document.getElementById("time");
-  if (timeEl) timeEl.textContent = player.time;
+    const timeEl = document.getElementById("time");
+    if (timeEl) timeEl.textContent = player.time;
 
-  const playerHealthEl = document.getElementById("playerHealth");
-  if (playerHealthEl) playerHealthEl.textContent = clamp(player.health);
+    const playerHealthEl = document.getElementById("playerHealth");
+    if (playerHealthEl) playerHealthEl.textContent = clamp(player.health);
 
-  const playerMoodEl = document.getElementById("playerMood");
-  if (playerMoodEl) playerMoodEl.textContent = clamp(player.mood);
+    const playerMoodEl = document.getElementById("playerMood");
+    if (playerMoodEl) playerMoodEl.textContent = clamp(player.mood);
 
-  const pointsEl = document.getElementById("points");
-  if (pointsEl) {
-    const maxPossibleScore = (player.currentDay - 1) * 100; // Only count completed days
-    const percentage =
-      maxPossibleScore > 0
-        ? Math.round((player.currentPoints / maxPossibleScore) * 100)
-        : 0;
-    pointsEl.textContent = `${Math.round(player.currentPoints)}/${maxPossibleScore} (${percentage}%)`;
-  }
+    const pointsEl = document.getElementById("points");
+    if (pointsEl) {
+      const maxPossibleScore = (player.currentDay - 1) * 100; // Only count completed days
+      const percentage =
+        maxPossibleScore > 0
+          ? Math.round((player.currentPoints / maxPossibleScore) * 100)
+          : 0;
+      pointsEl.textContent = `${Math.round(player.currentPoints)}/${maxPossibleScore} (${percentage}%)`;
+    }
 
-  // Update shop display if it's open (shows affordability of items)
-  const shopSidebar = document.getElementById("shopSidebar");
-  if (shopSidebar && shopSidebar.style.display === "block") {
-    renderShopItems();
-  }
+    // Update shop display if it's open (shows affordability of items)
+    const shopSidebar = document.getElementById("shopSidebar");
+    if (shopSidebar && shopSidebar.style.display === "block") {
+      renderShopItems();
+    }
 
-  // Update to-do list if modal is open
-  const todoModal = document.getElementById("todoModal");
-  if (todoModal && todoModal.style.display === "flex") {
-    updateTodoList();
+    // Update to-do list if modal is open
+    const todoModal = document.getElementById("todoModal");
+    if (todoModal && todoModal.style.display === "flex") {
+      updateTodoList();
+    }
+  } catch (error) {
+    console.error("Error updating player stats:", error);
   }
 }
 
 // Update all progress bar visualizations
 function updateProgressBars() {
-  setStatBar("energyBar", clamp(pet.energy));
-  setStatBar("healthBar", clamp(pet.health));
+  console.log("Updating progress bars:", {
+    energy: pet.energy,
+    health: pet.health,
+    time: player.time,
+    playerMood: player.mood,
+    playerHealth: player.health
+  });
+  
+  try {
+    setStatBar("energyBar", clamp(pet.energy));
+    setStatBar("healthBar", clamp(pet.health));
 
-  const timePercent = clamp((player.time / 24) * 100);
-  setStatBar("timeBar", timePercent);
+    const timePercent = clamp((player.time / 24) * 100);
+    setStatBar("timeBar", timePercent);
 
-  setStatBar("playerMoodBar", clamp(player.mood));
-  setStatBar("playerHealthBar", clamp(player.health));
+    setStatBar("playerMoodBar", clamp(player.mood));
+    setStatBar("playerHealthBar", clamp(player.health));
+  } catch (error) {
+    console.error("Error updating progress bars:", error);
+  }
 }
 
 // Update day number display
@@ -1883,17 +1903,24 @@ function endGameLoss() {
 // Update progress bar width and color (red to green based on value)
 function setStatBar(barId, value) {
   const el = document.getElementById(barId);
-  if (!el) return;
+  if (!el) {
+    console.warn(`Progress bar element not found: ${barId}`);
+    return;
+  }
 
-  const percent = clamp(Math.round(value));
-  el.style.width = percent + "%";
+  try {
+    const percent = clamp(Math.round(value));
+    el.style.width = percent + "%";
 
-  // Color transitions from red (0) to green (100)
-  const hue = Math.round((percent / 100) * 120);
-  el.style.background = `hsl(${hue}, 75%, 45%)`;
+    // Color transitions from red (0) to green (100)
+    const hue = Math.round((percent / 100) * 120);
+    el.style.background = `hsl(${hue}, 75%, 45%)`;
 
-  const parent = el.parentElement;
-  if (parent) parent.setAttribute("aria-valuenow", percent);
+    const parent = el.parentElement;
+    if (parent) parent.setAttribute("aria-valuenow", percent);
+  } catch (error) {
+    console.error(`Error setting stat bar ${barId}:`, error);
+  }
 }
 
 // ===== DEBUG/CREATIVE MODE =====
