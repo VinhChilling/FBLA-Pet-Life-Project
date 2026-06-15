@@ -56,7 +56,7 @@ let pet = {
 
   // Daily activity counters (reset each day)
   fedCounter: 0, // Need 3+ per day
-  playCounter: 0, // Need 6+ per day
+  playCounter: 0, // Need 4+ per day
   hasCleaned: false,
   hadVetVisitThisWeek: false,
 
@@ -582,8 +582,8 @@ async function loadGame() {
     }
 
     // Load the game data
-    pet = gameData.pet || gameData.pet;
-    player = gameData.player || gameData.player;
+    pet = gameData.pet;
+    player = gameData.player;
     dailyStats = Array.isArray(gameData.dailyStats) ? gameData.dailyStats : [];
 
     // Defensive validation of loaded names
@@ -836,10 +836,8 @@ function calculateDailyScore() {
   // Health/Mood (10): Good health and mood
   if (pet.health >= 80 && pet.mood === "Happy") {
     petCarePoints += 10;
-    player.timesPlayed++;
   } else if (pet.health >= 60) {
     petCarePoints += 5;
-    player.timesPlayed++;
   }
 
   // Cleaning (5): Weekly cleaning (hasCleanedThisWeek or similar)
@@ -1438,8 +1436,8 @@ function sleep() {
     }
     
     // Process day evaluation (this modifies health/mood)
-    player.timesSlept += 1;
     dayTick();
+    player.timesSlept += 1;
 
     // Reset time and give pet rest bonus
     player.time = 24;
@@ -1715,17 +1713,18 @@ function validateAndSanitizeName(raw, fieldLabel, defaultVal) {
 // Convert mood string to emoji and detailed description
 function moodToEmoji(mood) {
   const moodMap = {
-    Happy: "",
-    Content: "",
-    Excited: "",
-    Rested: "",
-    Hungry: "",
-    Bored: "",
-    Dirty: "",
-    Sick: "",
-    Healthy: "",
+    Happy: "😊",
+    Content: "😌",
+    Excited: "🎉",
+    Rested: "😴",
+    Hungry: "🍽️",
+    Bored: "😐",
+    Dirty: "🧹",
+    Sick: "🤒",
+    Healthy: "💪",
+    Tired: "😫",
   };
-  return moodMap[mood] ?? "";
+  return moodMap[mood] ?? "😐";
 }
 
 function getMoodDescription(mood) {
@@ -1967,7 +1966,9 @@ function toggleShop() {
 
 function closeShop() {
   const shopSidebar = document.getElementById("shopSidebar");
-  shopSidebar.style.display = "none";
+  if (shopSidebar) {
+    shopSidebar.style.display = "none";
+  }
 }
 
 function renderShopItems() {
