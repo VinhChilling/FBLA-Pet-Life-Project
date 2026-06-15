@@ -4,14 +4,25 @@
    smooth animations for an engaging game experience
    ============================================================ */
 
+/* Use the local Bubblegum Sans font file offline.
+   Uncomment the next line to switch back to Google Fonts. */
+/* @import url("https://fonts.googleapis.com/css2?family=Bubblegum+Sans&display=swap"); */
+
 /* ===== FONTS ===== */
 @font-face {
-  font-family: "BubblegumSans-Regular";
-  src: url("../../fonts/BubblegumSans-Regular.ttf") format("truetype");
-  font-weight: normal;
+  font-family: "Bubblegum Sans";
+  src: url("../fonts/BubblegumSans-Regular.ttf") format("truetype");
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
+
+.bubblegum-sans-regular {
+  font-family: "Bubblegum Sans", cursive, sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
 
 /* ===== CSS VARIABLES ===== */
 :root {
@@ -32,7 +43,7 @@ body {
 body {
   margin: 0;
   font-family:
-    BubblegumSans-Regular,
+    "Bubblegum Sans",
     system-ui,
     -apple-system,
     "Segoe UI",
