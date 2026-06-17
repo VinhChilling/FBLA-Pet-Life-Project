@@ -247,30 +247,53 @@
             <!-- Performance View -->
             <section id="performanceView" class="view" style="display: none;">
                 <div class="performance-grid">
-                    <!-- Performance Trends Card - Full Width -->
                     <div class="stat-card chart-card-full">
                         <h2>📈 Performance Trends</h2>
+                        <div class="chart-controls">
+                            <label for="performanceMode">View mode:</label>
+                            <select id="performanceMode" class="chart-select">
+                                <option value="overall">Overall (%)</option>
+                                <option value="player">Player Stats</option>
+                                <option value="pet">Pet Stats</option>
+                            </select>
+                        </div>
                         <div class="chart-container-centered">
                             <canvas id="performanceChart" class="performance-chart"></canvas>
                         </div>
-                        <div class="chart-legend-bottom">
-                            <div class="legend-item">
-                                <div class="legend-color health-color"></div>
-                                <span class="legend-label">Health</span>
+                    </div>
+
+                    <div class="chart-box-grid chart-row-full">
+                        <div class="stat-card chart-card-square">
+                            <h2>⏱️ Time Usage</h2>
+                            <div class="chart-container-centered">
+                                <canvas id="timeUsageChart" class="performance-chart"></canvas>
                             </div>
-                            <div class="legend-item">
-                                <div class="legend-color mood-color"></div>
-                                <span class="legend-label">Mood</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-color score-color"></div>
-                                <span class="legend-label">Score</span>
+                        </div>
+
+                        <div class="stat-card chart-card-square">
+                            <h2>💰 Expense Breakdown</h2>
+                            <div class="chart-container-centered">
+                                <canvas id="financialChart" class="performance-chart"></canvas>
                             </div>
                         </div>
                     </div>
 
+                    <div class="stat-card chart-card-full">
+                        <h2>😴 Sleep Hours</h2>
+                        <div class="chart-container-centered">
+                            <canvas id="sleepChart" class="performance-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="stat-card chart-card">
+                        <h2>📊 Activity Counts</h2>
+                        <div class="chart-container-centered">
+                            <canvas id="activityChart" class="performance-chart"></canvas>
+                        </div>
+                    </div>
+
                     <!-- Statistical Analysis Card -->
-                    <div class="stat-card analysis-card">
+                    <div class="stat-card analysis-card-full">
                         <h2>🔬 Statistical Analysis</h2>
                         <div class="stats-analysis">
                             <div class="analysis-row">
@@ -416,6 +439,7 @@
     <script src="../shared/blockedWords.js"></script>
     <script src="../shared/api.js"></script>
     <script src="../shared/evolution.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="gameEnd.js"></script>
 </body>
 </html>

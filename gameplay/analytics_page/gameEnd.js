@@ -8,6 +8,11 @@ let currentView = "overview";
 let achievementSystem = null;
 let isDemoMode = false;
 let currentReportContent = "";
+let performanceChart = null;
+let financialChart = null;
+let timeUsageChart = null;
+let activityChart = null;
+let sleepChart = null;
 
 const DASHBOARD_ASSETS = {
   images: "../../images/",
@@ -383,37 +388,90 @@ function generateChartData(stats) {
   const { pet, player, finalDay, dailyStats } = stats;
   const daysPlayed = Math.max(1, finalDay - 1);
 
-  let healthData = [];
-  let moodData = [];
+  const mapMoodToScore = (mood) => {
+    if (typeof mood === "number") return mood;
+    const moodMap = {
+      Happy: 90,
+      Content: 80,
+      Excited: 95,
+      Healthy: 90,
+      Sick: 40,
+      Hungry: 50,
+      Stressed: 45,
+      Tired: 55,
+    };
+    return moodMap[mood] ?? 70;
+  };
+
+  let petHealthData = [];
+  let petEnergyData = [];
+  let playerHealthData = [];
+  let playerMoodData = [];
   let scoreData = [];
+  let sleepHours = [];
 
   if (Array.isArray(dailyStats) && dailyStats.length > 0) {
-    healthData = dailyStats.map((d) => d.pet?.health ?? 0);
-    moodData = dailyStats.map((d) => {
-      const mood = d.pet?.mood;
-      if (typeof mood === "number") return mood;
-      const moodMap = { Happy: 90, Content: 80, Excited: 95, Sick: 40, Hungry: 50 };
-      return moodMap[mood] ?? 70;
-    });
+    petHealthData = dailyStats.map((d) => d.pet?.health ?? 0);
+    petEnergyData = dailyStats.map((d) => d.pet?.energy ?? 0);
+    playerHealthData = dailyStats.map((d) => d.player?.health ?? 0);
+    playerMoodData = dailyStats.map((d) => mapMoodToScore(d.player?.mood ?? player.mood));
     scoreData = dailyStats.map((d) => d.player?.currentPoints ?? 0);
+    sleepHours = dailyStats.map((d) => d.player?.lastSleepHours ?? (player.avgSleepHours || 0));
   } else {
-    healthData = generateSimulatedData(daysPlayed, 50, 100, pet.health || 50);
-    moodData = generateSimulatedData(daysPlayed, 30, 100, player.mood || 50);
+    const playerMoodFinal = mapMoodToScore(player.mood);
+    petHealthData = generateSimulatedData(daysPlayed, 45, 100, pet.health || 50);
+    petEnergyData = generateSimulatedData(daysPlayed, 40, 100, pet.energy || 50);
+    playerHealthData = generateSimulatedData(daysPlayed, 35, 100, player.health || 50);
+    playerMoodData = generateSimulatedData(daysPlayed, 30, 100, playerMoodFinal);
     scoreData = generateSimulatedData(daysPlayed, 0, 150, player.currentPoints || 0);
+    sleepHours = generateSimulatedData(daysPlayed, 5, 10, player.avgSleepHours || 7);
+  }
+
+  const activityCounts = {
+    feeding: pet.timesFed || 0,
+    playing: pet.timesPlayed || 0,
+    cleaning: pet.timesCleaned || 0,
+    vetVisits: pet.timesVisitedVet || 0,
+    chores: pet.timesDoingChores || 0,
+    exercise: player.timesExercised || 0,
+    reading: player.timesRead || 0,
+    todo: player.timesScheduled || 0,
+    hangout: player.timesHangout || 0,
+  };
+
+  const timeUsage = {
+    Play: activityCounts.playing * 1,
+    Clean: activityCounts.cleaning * 2,
+    "Vet Visit": activityCounts.vetVisits * 4,
+    Chores: activityCounts.chores * 2,
+    "Read Book": activityCounts.reading * 1,
+    Exercise: activityCounts.exercise * 2,
+    "Create To-Do": activityCounts.todo * 2,
+    Hangout: activityCounts.hangout * 3,
+  };
+
+  const expenseBreakdown = {
+    Feed: (pet.timesFed || 0) * 5,
+    Clean: (pet.timesCleaned || 0) * 3,
+    "Vet Visit": (pet.timesVisitedVet || 0) * 30,
+    Shop: player.totalMoneySpent || 0,
+  };
+
+  const expectedExpense = Object.values(expenseBreakdown).reduce((sum, value) => sum + value, 0);
+  if ((player.expenses || 0) > expectedExpense) {
+    expenseBreakdown.Other = (player.expenses || 0) - expectedExpense;
   }
 
   return {
-    health: healthData,
-    mood: moodData,
+    health: petHealthData,
+    energy: petEnergyData,
+    playerHealth: playerHealthData,
+    mood: playerMoodData,
     score: scoreData,
-    activities: {
-      feeding: pet.timesFed || 0,
-      playing: pet.timesPlayed || 0,
-      cleaning: pet.timesCleaned || 0,
-      exercise: player.timesExercised || 0,
-      reading: player.timesRead || 0,
-      hanging: player.timesHangout || 0,
-    },
+    sleepHours,
+    activities: activityCounts,
+    timeUsage,
+    expenseBreakdown,
   };
 }
 
@@ -674,8 +732,11 @@ function initializePerformanceView() {
   updateProgressBar("playingProgress", "playingPercent", metrics.playingConsistency);
   updateProgressBar("selfCareProgress", "selfCarePercent", metrics.selfCareConsistency);
   
-  // Draw charts (simplified version - in production would use Chart.js or similar)
-  drawSimpleCharts(chartData);
+  renderPerformanceChart(chartData);
+  renderExpenseChart(gameStats);
+  renderTimeUsageChart(gameStats);
+  renderSleepChart(gameStats);
+  renderActivityChart(gameStats);
 }
 
 /**
@@ -713,6 +774,518 @@ function drawSimpleCharts(chartData) {
   const ctx = prepareCanvas(performanceCanvas);
   if (ctx) {
     drawLineChart(ctx, chartData.health, chartData.mood, chartData.score);
+  }
+}
+
+/**
+ * Render the performance chart with Chart.js
+ * @param {Object} chartData - Chart data
+ */
+function renderPerformanceChart(chartData) {
+  const chartElement = document.getElementById("performanceChart");
+  if (!chartElement) return;
+  const mode = document.getElementById("performanceMode")?.value || "overall";
+  const labels = Array.from({ length: Math.max(chartData.health.length, 1) }, (_, index) => `Day ${index + 1}`);
+  const filteredLabels = labels.filter((_, index) => index !== 30);
+
+  const colors = {
+    health: { border: "#059669", background: "transparent" },
+    energy: { border: "#facc15", background: "transparent" },
+    mood: { border: "#f97316", background: "transparent" },
+    playerHealth: { border: "#ec4899", background: "transparent" },
+    score: { border: "#1d4ed8", background: "transparent" },
+  };
+
+  const trimDay31 = (data) => data.filter((_, index) => index !== 30);
+
+  const formatPercentSeries = (data) => trimDay31(data).map((value) => Math.min(100, Math.max(0, Math.round(value))));
+  
+  // Calculate daily earned score as percentage of 100 max daily points
+  const calculateDailyScorePercentage = (scoreData) => {
+    const dailyEarned = [];
+    let previousCumulative = 0;
+    
+    scoreData.forEach((cumulativeScore, index) => {
+      if (index === 0) {
+        // First day: earned = cumulative
+        dailyEarned.push(Math.min(100, Math.max(0, cumulativeScore)));
+      } else {
+        // Subsequent days: earned = cumulative - previous cumulative
+        const earned = cumulativeScore - previousCumulative;
+        dailyEarned.push(Math.min(100, Math.max(0, earned)));
+      }
+      previousCumulative = cumulativeScore;
+    });
+    
+    return trimDay31(dailyEarned);
+  };
+
+  let datasets = [];
+  if (mode === "player") {
+    datasets = [
+      {
+        label: "Player Health",
+        data: formatPercentSeries(chartData.playerHealth),
+        borderColor: colors.playerHealth.border,
+        backgroundColor: colors.playerHealth.background,
+        tension: 0.35,
+        pointRadius: 4,
+        fill: false,
+      },
+      {
+        label: "Player Mood",
+        data: formatPercentSeries(chartData.mood),
+        borderColor: colors.mood.border,
+        backgroundColor: colors.mood.background,
+        tension: 0.35,
+        pointRadius: 4,
+        fill: false,
+      },
+    ];
+  } else if (mode === "pet") {
+    datasets = [
+      {
+        label: "Pet Health",
+        data: formatPercentSeries(chartData.health),
+        borderColor: colors.health.border,
+        backgroundColor: colors.health.background,
+        tension: 0.35,
+        pointRadius: 4,
+        fill: false,
+      },
+      {
+        label: "Pet Energy",
+        data: formatPercentSeries(chartData.energy),
+        borderColor: colors.energy.border,
+        backgroundColor: colors.energy.background,
+        tension: 0.35,
+        pointRadius: 4,
+        fill: false,
+      },
+    ];
+  } else {
+    datasets = [
+      {
+        label: "Pet Health",
+        data: formatPercentSeries(chartData.health),
+        borderColor: colors.health.border,
+        backgroundColor: colors.health.background,
+        tension: 0.35,
+        pointRadius: 4,
+        fill: false,
+      },
+      {
+        label: "Pet Energy",
+        data: formatPercentSeries(chartData.energy),
+        borderColor: colors.energy.border,
+        backgroundColor: colors.energy.background,
+        tension: 0.35,
+        pointRadius: 4,
+        fill: false,
+      },
+      {
+        label: "Player Mood",
+        data: formatPercentSeries(chartData.mood),
+        borderColor: colors.mood.border,
+        backgroundColor: colors.mood.background,
+        tension: 0.35,
+        pointRadius: 4,
+        fill: false,
+      },
+      {
+        label: "Player Health",
+        data: formatPercentSeries(chartData.playerHealth),
+        borderColor: colors.playerHealth.border,
+        backgroundColor: colors.playerHealth.background,
+        tension: 0.35,
+        pointRadius: 4,
+        fill: false,
+      },
+      {
+        label: "Daily Score %",
+        data: calculateDailyScorePercentage(chartData.score),
+        borderColor: colors.score.border,
+        backgroundColor: colors.score.background,
+        tension: 0.35,
+        pointRadius: 4,
+        fill: false,
+      },
+    ];
+  }
+
+  if (performanceChart) {
+    performanceChart.destroy();
+    performanceChart = null;
+  }
+
+  if (typeof Chart !== "undefined") {
+    const ctx = chartElement.getContext("2d");
+    performanceChart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: filteredLabels,
+        datasets,
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: "bottom",
+            labels: {
+              usePointStyle: true,
+              padding: 16,
+            },
+          },
+          tooltip: {
+            mode: "index",
+            intersect: false,
+            callbacks: {
+              label: (context) => `${context.dataset.label}: ${context.parsed.y}%`,
+            },
+          },
+        },
+        interaction: {
+          mode: "nearest",
+          intersect: false,
+        },
+        scales: {
+          x: {
+            grid: {
+              color: "rgba(226, 232, 240, 0.8)",
+            },
+          },
+          y: {
+            beginAtZero: true,
+            max: 100,
+            ticks: {
+              callback: (value) => `${value}%`,
+            },
+            grid: {
+              color: "rgba(226, 232, 240, 0.8)",
+            },
+          },
+        },
+      },
+    });
+  } else {
+    drawSimpleCharts(chartData);
+  }
+}
+
+/**
+ * Render the financial breakdown chart with Chart.js
+ * @param {Object} stats - Game statistics
+ */
+function renderExpenseChart(stats) {
+  const chartElement = document.getElementById("financialChart");
+  if (!chartElement) return;
+
+  const chartData = generateChartData(stats);
+  const expenseData = chartData.expenseBreakdown || {};
+  const labels = Object.keys(expenseData).map((label) => label);
+  const values = Object.values(expenseData);
+  const backgroundColors = [
+    "#2563eb",
+    "#f59e0b",
+    "#14b8a6",
+    "#ef4444",
+    "#8b5cf6",
+    "#22c55e",
+  ];
+
+  if (financialChart) {
+    financialChart.destroy();
+    financialChart = null;
+  }
+
+  if (typeof Chart !== "undefined") {
+    const ctx = chartElement.getContext("2d");
+    financialChart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "Coins Spent",
+            data: values,
+            backgroundColor: labels.map((_, index) => backgroundColors[index % backgroundColors.length]),
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            ticks: {
+              autoSkip: false,
+            },
+            grid: {
+              display: false,
+            },
+          },
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: "rgba(226, 232, 240, 0.8)",
+            },
+          },
+        },
+        plugins: {
+          legend: {
+            display: false,
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => `${context.dataset.label}: $${context.parsed.y}`,
+            },
+          },
+        },
+      },
+    });
+  }
+}
+
+/**
+ * Render the time usage chart with Chart.js
+ * @param {Object} stats - Game statistics
+ */
+function renderTimeUsageChart(stats) {
+  const chartElement = document.getElementById("timeUsageChart");
+  if (!chartElement) return;
+
+  const chartData = generateChartData(stats);
+  const labels = Object.keys(chartData.timeUsage || {});
+  const values = Object.values(chartData.timeUsage || {});
+
+  if (timeUsageChart) {
+    timeUsageChart.destroy();
+    timeUsageChart = null;
+  }
+
+  if (typeof Chart !== "undefined") {
+    const ctx = chartElement.getContext("2d");
+    timeUsageChart = new Chart(ctx, {
+      type: "pie",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "Time Spent (hours)",
+            data: values,
+            backgroundColor: [
+              "#1d4ed8",
+              "#ef4444",
+              "#a855f7",
+              "#22c55e",
+              "#14b8a6",
+              "#facc15",
+              "#ec4899",
+              "#fb923c",
+            ],
+            borderColor: "#ffffff",
+            borderWidth: 2,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: "bottom",
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => `${context.label}: ${context.parsed}h`,
+            },
+          },
+        },
+      },
+      plugins: [
+        {
+          id: "sliceLabels",
+          afterDatasetsDraw(chart) {
+            const dataset = chart.data.datasets[0];
+            const total = dataset.data.reduce((sum, value) => sum + value, 0);
+            if (total <= 0) return;
+
+            const meta = chart.getDatasetMeta(0);
+            meta.data.forEach((arc, index) => {
+              const value = dataset.data[index];
+              const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+              if (percentage <= 0) return;
+
+              const center = arc.getCenterPoint();
+              const label = `${percentage}%`;
+
+              chart.ctx.save();
+              chart.ctx.font = "bold 12px ui-sans-serif, system-ui, sans-serif";
+              chart.ctx.textAlign = "center";
+              chart.ctx.textBaseline = "middle";
+              chart.ctx.fillStyle = "#ffffff";
+              chart.ctx.strokeStyle = "rgba(0, 0, 0, 0.45)";
+              chart.ctx.lineWidth = 2;
+              chart.ctx.strokeText(label, center.x, center.y);
+              chart.ctx.fillText(label, center.x, center.y);
+              chart.ctx.restore();
+            });
+          },
+        },
+      ],
+    });
+  }
+}
+
+function renderSleepChart(stats) {
+  const chartElement = document.getElementById("sleepChart");
+  if (!chartElement) return;
+
+  const chartData = generateChartData(stats);
+  const labels = Array.from({ length: Math.max(chartData.sleepHours.length, 1) }, (_, index) => `Day ${index + 1}`);
+  const values = chartData.sleepHours.map((value) => Number(value) || 0);
+
+  if (sleepChart) {
+    sleepChart.destroy();
+    sleepChart = null;
+  }
+
+  if (typeof Chart !== "undefined") {
+    const ctx = chartElement.getContext("2d");
+    sleepChart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "Sleep Hours",
+            data: values,
+            borderColor: "#4f46e5",
+            backgroundColor: "rgba(79, 70, 229, 0.15)",
+            tension: 0.35,
+            pointRadius: 4,
+            fill: true,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            grid: {
+              color: "rgba(226, 232, 240, 0.8)",
+            },
+          },
+          y: {
+            beginAtZero: true,
+            max: 12,
+            grid: {
+              color: "rgba(226, 232, 240, 0.8)",
+            },
+          },
+        },
+        plugins: {
+          legend: {
+            position: "bottom",
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => `${context.dataset.label}: ${context.parsed.y}h`,
+            },
+          },
+        },
+      },
+    });
+  }
+}
+
+/**
+ * Render the activity count chart with Chart.js
+ * @param {Object} stats - Game statistics
+ */
+function renderActivityChart(stats) {
+  const chartElement = document.getElementById("activityChart");
+  if (!chartElement) return;
+
+  const activities = generateChartData(stats).activities || {};
+  const labels = Object.keys(activities).map((name) => name.charAt(0).toUpperCase() + name.slice(1));
+  const values = Object.values(activities);
+  const backgroundColors = [
+    "#2563eb",
+    "#10b981",
+    "#f59e0b",
+    "#ef4444",
+    "#8b5cf6",
+    "#ec4899",
+    "#22c55e",
+    "#f97316",
+    "#8b5cf6",
+  ];
+
+  if (activityChart) {
+    activityChart.destroy();
+    activityChart = null;
+  }
+
+  if (!labels.length || values.every((value) => Number(value) === 0)) {
+    if (chartElement.parentElement) {
+      chartElement.parentElement.style.minHeight = "320px";
+      chartElement.parentElement.innerHTML = '<div class="empty-chart-message">No activity counts available yet.</div>';
+    }
+    return;
+  }
+
+  if (typeof Chart !== "undefined") {
+    const ctx = chartElement.getContext("2d");
+    activityChart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "Activity Count",
+            data: values,
+            backgroundColor: backgroundColors.slice(0, labels.length),
+            borderRadius: 10,
+            barPercentage: 0.7,
+            categoryPercentage: 0.75,
+            maxBarThickness: 64,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            ticks: {
+              autoSkip: false,
+              maxRotation: 40,
+              minRotation: 30,
+            },
+            grid: { display: false },
+          },
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: "rgba(226, 232, 240, 0.8)",
+            },
+          },
+        },
+        plugins: {
+          legend: {
+            display: false,
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => `${context.dataset.label}: ${context.parsed.y}`,
+            },
+          },
+        },
+      },
+    });
   }
 }
 
@@ -1629,6 +2202,11 @@ function initializeAchievementsView() {
 function wireDashboardEvents() {
   document.querySelectorAll(".tab-btn").forEach((btn) => {
     btn.addEventListener("click", () => showView(btn.dataset.view));
+  });
+
+  document.getElementById("performanceMode")?.addEventListener("change", () => {
+    if (!gameStats) return;
+    renderPerformanceChart(generateChartData(gameStats));
   });
 
   document.getElementById("backBtn")?.addEventListener("click", () => {
