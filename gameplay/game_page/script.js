@@ -125,25 +125,33 @@ const FOOD_SHOP = [
     name: "Basic Food",
     cost: 5,
     energyPerFeed: 5,
-    desc: "Standard meal. 1 energy per dollar (renews weekly)",
+    healthPerFeed: 5,
+    desc: "Standard meal. 5 energy and 5 health per feed (renews weekly)",
+    requiredFeed: 4,
   },
   {
     name: "Premium Food",
     cost: 10,
     energyPerFeed: 10,
-    desc: "Better ingredients. 2 energy per dollar (renews weekly)",
+    healthPerFeed: 5,
+    desc: "Better ingredients. 10 energy and 5 health per feed (renews weekly)",
+    requiredFeed: 3,
   },
   {
     name: "Deluxe Food",
     cost: 15,
     energyPerFeed: 15,
-    desc: "Gourmet quality. 3 energy per dollar (renews weekly)",
+    healthPerFeed: 5,
+    desc: "High quality. 15 energy and 5 health per feed (renews weekly)",
+    requiredFeed: 2,
   },
   {
     name: "Gourmet Food",
     cost: 25,
     energyPerFeed: 20,
-    desc: "Finest ingredients. 4 energy per dollar (renews weekly)",
+    healthPerFeed: 5,
+    desc: "Finest ingredients. 20 energy and 5 health per feed (renews weekly)",
+    requiredFeed: 1,
   },
 ];
 
@@ -199,7 +207,7 @@ window.addEventListener("DOMContentLoaded", function () {
   if (hasSaveData && loadBtn) {
     loadBtn.style.display = "block";
   }
-  setDefaultDifficulty();
+  // setDefaultDifficulty();
   // Attach lightweight inline validation for name inputs (UX helper)
   try {
     const playerInputEl = document.getElementById("playerNameInput");
@@ -354,14 +362,13 @@ function selectDifficulty(level) {
     .forEach((btn) => btn.classList.remove("active"));
 
   const difficultyMap = {
-    easy: { coins: 30, info: "Easy: Start with $30", btn: "easyBtn" },
-    normal: { coins: 15, info: "Normal: Start with $15", btn: "normalBtn" },
-    hard: { coins: 5, info: "Hard: Start with only $5", btn: "hardBtn" },
+    easy: { info: "Easy: Start with $30", btn: "easyBtn" },
+    normal: { info: "Normal: Start with $15", btn: "normalBtn" },
+    hard: { info: "Hard: Start with only $5", btn: "hardBtn" },
   };
 
   const config = difficultyMap[level];
   player.difficulty = level;
-  player.coins = config.coins;
   const selectedBtn = document.getElementById(config.btn);
   const difficultyInfo = document.getElementById("difficultyInfo");
   if (selectedBtn) selectedBtn.classList.add("active");
@@ -514,6 +521,7 @@ function applyGameStateDefaults() {
     avgSleepHours: 0,
     totalSleepHours: 0,
     lastSleepHours: 0,
+    fedCounter: 0,
     hasHangout: false,
     hasExercised: false,
     hasRead: false,
@@ -549,6 +557,24 @@ function showSaveIndicator(message = "Saved") {
   setTimeout(() => {
     indicator.style.animation = "fadeInOut 2s ease";
   }, 10);
+}
+
+function showDayEventNotification(message, type = "info", duration = 4000) {
+  const notice = document.getElementById("dayEventNotification");
+  if (!notice) return;
+
+  notice.textContent = message;
+  notice.className = `day-event-notification show ${type}`;
+  notice.setAttribute("aria-hidden", "false");
+
+  if (notice._hideTimeout) {
+    clearTimeout(notice._hideTimeout);
+  }
+
+  notice._hideTimeout = setTimeout(() => {
+    notice.className = "day-event-notification";
+    notice.setAttribute("aria-hidden", "true");
+  }, duration);
 }
 
 function showNotification(message, type = "Info") {
@@ -685,34 +711,54 @@ function clearSaveGame() {
 function triggerRandomEvent() {
   const eventChance = Math.random();
 
-  // 50% chance of no event
-  if (eventChance < 0.1) {
-    triggerRandomSickness(); // 10% - rarest
-  } else if (eventChance < 0.3) {
-    triggerExtraHunger(); // 20%
+  // Probabilities:
+  // 0.0 - 0.20 : Sickness (20%)
+  // 0.20 - 0.50: Extra hunger (30%)
+  // 0.50 - 0.80: Extra energy/play need (30%)
+  // 0.80 - 1.00: No event (20%)
+
+  if (eventChance < 0.2) {
+    triggerRandomSickness(); // 20% - rarest
+    return "sickness";
   } else if (eventChance < 0.5) {
-    triggerExtraEnergyNeed(); // 20%
+    triggerExtraHunger(); // 30%
+    return "hunger";
+  } else if (eventChance < 0.8) {
+    triggerExtraEnergyNeed(); // 30%
+    return "energy";
   }
-  // 50% chance no event
+  // No event
+  return null;
 }
 
 function triggerRandomSickness() {
-  pet.health -= 20;
+  pet.health = clamp((pet.health || 0) - 30);
   pet.mood = "Sick";
   pet.hadVetVisitThisWeek = false; // Force vet visit
-  showSaveIndicator("🤒 Your pet got sick! Visit the vet ASAP!");
+  pet.timesVisitedVet = pet.timesVisitedVet || 0;
+  showDayEventNotification("🤒 Your pet got sick! Visit the vet ASAP!", "error");
+  updateStats();
+  saveGame();
   console.log("Random Event: Pet got sick!");
 }
 
 function triggerExtraHunger() {
-  showSaveIndicator("🍽️ Your pet is extra hungry today! Feed more often.");
-  pet.fedCounter = Math.max(0, pet.fedCounter - 2); // Reduce fed counter to require more feeding
+  showDayEventNotification("🍽️ Your pet is extra hungry today! Feed more often.", "info");
+  pet.fedCounter = Math.max(0, (pet.fedCounter || 0) - 2); // Reduce fed counter to require more feeding
+  // Slightly decrease energy to reflect hunger
+  pet.energy = clamp((pet.energy || 0) - 10);
+  updateStats();
+  saveGame();
   console.log("Random Event: Pet is extra hungry!");
 }
 
 function triggerExtraEnergyNeed() {
-  showSaveIndicator("⚡ Your pet is extra playful! Needs more play sessions.");
-  pet.playCounter = Math.max(0, pet.playCounter - 2); // Reduce play counter to require more playing
+  showDayEventNotification("⚡ Your pet is extra playful! Needs more play sessions.", "info");
+  pet.playCounter = Math.max(0, (pet.playCounter || 0) - 2); // Reduce play counter to require more playing
+  // Make pet slightly more energetic (wants to play), avoid exceeding max
+  pet.energy = clamp((pet.energy || 0) + 5);
+  updateStats();
+  saveGame();
   console.log("Random Event: Pet needs extra play!");
 }
 
@@ -760,8 +806,7 @@ function dayTick() {
   updateDayDisplay();
   processSleepHours();
 
-  // Trigger random event at day start
-  triggerRandomEvent();
+  // NOTE: random events were moved to occur after sleep resets
 
   calculateDailyScore();
   resetDailyCounters();
@@ -769,9 +814,7 @@ function dayTick() {
 
 // Check if pet was played with enough (4+ times)
 function checkPetPlayRequirement() {
-  const requiredPlays = 4; // Fixed requirement in local mode
-
-  if (pet.playCounter < requiredPlays) {
+  if (pet.playCounter < getRequiredPlays()) {
     pet.energy -= 20;
     pet.mood = "Bored";
     pet.health -= 15;
@@ -779,9 +822,16 @@ function checkPetPlayRequirement() {
   }
 }
 
+function checkPlayerFeedingRequirement(){
+  if (player.fedCounter < getRequiredPlayerFeeds()){
+    player.energy -= 20;
+    player.health -= 20;
+  }
+}
+
 // Check if pet was fed enough (3+ times)
 function checkPetFeedingRequirement() {
-  if (pet.fedCounter < 3) {
+  if (pet.fedCounter < getRequiredFeeds()) {
     pet.energy -= 35;
     pet.mood = "Hungry";
     pet.health -= 20;
@@ -1004,59 +1054,83 @@ const FOOD_TIER_INDEX = {
   gourmet: 3,
 };
 
-function getCurrentFood() {
-  return FOOD_SHOP[FOOD_TIER_INDEX[player.foodTier] ?? 0];
+const TOY_TIER_INDEX = {
+  basic: 0,
+  premium: 1,
+  deluxe: 2,
+  gourmet: 3, 
+};
+function getCurrentFood(){
+  return FOOD_SHOP[FOOD_TIER_INDEX[player.foodTier]]
 }
 
-// Feed pet: costs $5, increases energy, need 3+ per day
+function getCurrentToy(){
+  return TOY_SHOP[TOY_TIER_INDEX[player.toyTier]]
+}
+
+
+function getRequiredFeeds() {
+  return getCurrentFood().requiredFeeds;
+}
+
+function getRequiredPlays() {
+  return getCurrentFood().dailyPlayNeeded;
+}
+
+function getRequiredPlayerFeeds(){
+  return 3;
+}
+
+// Feed pet: costs $5, increases energy, need a certain amount a day
 // Feed pet: uses current food tier for cost, energy, and healing
 function feedPet() {
   // Check if player has bought food
-  if (player.daysFoodBought === -7) {
+  daysSinceBought = player.currentDay-player.daysFoodBoughtFoodBought;
+  if (player.daysFoodBought === -7 || daysSinceBought >= 7) {
     showErrorNotification("You must buy food from the shop first!", "Dismiss");
     return;
-  }
-  
-  const food = getCurrentFood();
-  const cost = food.cost;
-  
-  if (player.coins >= cost) {
-    player.coins -= cost;
-    player.expenses += cost;
+  } else {  
+    const food = getCurrentFood();
+    const cost = food.cost;
+    
     pet.energy += food.energyPerFeed;
-    pet.health += 5;
+    pet.health += 2;
+    player.time -= 0.5;
     pet.mood = "Content";
     pet.fedCounter++;
     pet.timesFed++;
-    
+      
     updateActivitySummary(); // Update activity summary in real-time
     updateStats();
     showNotification(`${pet.name} has been fed! +${food.energyPerFeed} energy`, "Success");
-  } else {
-    showErrorNotification(`Need $${cost} to feed pet!`, "Dismiss");
   }
 }
 
 // Play with pet: costs 1 hour, need 6+ per day
 function playWithPet() {
+
+  //Calculates how long ago toy was bought.
+  daysSinceBought = player.currentDay-player.daysFoodBoughtFoodBought;
   // Check if player has bought a toy
   if (player.daysToyBought === -7) {
     showErrorNotification("You must buy a toy from the shop first!", "Dismiss");
     return;
-  }
-  
-  if (player.time >= 1) {
-    player.time -= 1;
-    pet.energy += 10;
-    pet.mood = "Excited";
-    pet.playCounter++;
-    pet.timesPlayed++;
-    
-    updateActivitySummary(); // Update activity summary in real-time
-    updateStats();
-    showNotification(`${pet.name} enjoyed playing with you! +10 energy`, "Success");
   } else {
-    showErrorNotification("Need 1 hour to play with pet!", "Dismiss");
+    
+    if (player.time >= 1) {
+      player.time -= 1;
+      pet.energy -= 10;
+      pet.health += 3;
+      pet.mood = "Excited";
+      pet.playCounter++;
+      pet.timesPlayed++;
+      
+      updateActivitySummary(); // Update activity summary in real-time
+      updateStats();
+      showNotification(`${pet.name} enjoyed playing with you! +10 energy`, "Success");
+    } else {
+      showErrorNotification("Need 1 hour to play with pet!", "Dismiss");
+    }
   }
 }
 
@@ -1072,7 +1146,7 @@ function cleanPet() {
     pet.timesCleaned++;
     
     updateActivitySummary(); // Update activity summary in real-time
-    updateStats();
+    updateStats();  
     showNotification(`${pet.name} is now clean and happy!`, "Success");
   } else if (player.coins < 3) {
     showErrorNotification("Need $3 to clean pet!", "Dismiss");
@@ -1085,8 +1159,8 @@ function cleanPet() {
 function exercise() {
   if (player.time >= 2) {
     player.time -= 2;
-    player.health += 10;
-    player.mood += 10;
+    player.health += 5;
+    player.mood += 5;
     player.hasExercised = true;
     player.timesExercised++;
     
@@ -1151,11 +1225,11 @@ function hangoutWithFriends() {
   }
 }
 
-// Visit vet: costs $30 and 4 hours, required weekly
+// Visit vet: costs $40 and 4 hours, required weekly
 function vetVisit() {
-  if (player.coins >= 30 && player.time >= 4) {
-    player.coins -= 30;
-    player.expenses += 30;
+  if (player.coins >= 40 && player.time >= 4) {
+    player.coins -= 40;
+    player.expenses += 40;
     player.time -= 4;
     pet.health += 50;
     pet.mood = "Healthy";
@@ -1166,24 +1240,9 @@ function vetVisit() {
     updateStats();
     showNotification(`${pet.name} visited the vet! Health restored`, "Success");
   } else if (player.coins < 30) {
-    showErrorNotification("Need $30 to visit vet!", "Dismiss");
+    showErrorNotification("Need $40 to visit vet!", "Dismiss");
   } else {
     showErrorNotification("Need 4 hours to visit vet!", "Dismiss");
-  }
-}
-
-// Work: costs 3 hours, earn $15
-function work() {
-  if (player.time >= 3) {
-    player.coins += 15;
-    player.time -= 3;
-    player.timesWorked++;
-    
-    updateActivitySummary(); // Update activity summary in real-time
-    updateStats();
-    showNotification("Work completed! +$15", "Success");
-  } else {
-    showErrorNotification("Need 3 hours to work!", "Dismiss");
   }
 }
 
@@ -1203,11 +1262,47 @@ function study() {
   }
 }
 
+function fastFood() {
+  if (player.time >= 0.5){
+    player.health -= 8;
+    player.mood += 6;
+    player.time -= 0.5;
+    player.timesEatenFastFood++;
+    player.fedCounter++;
+    
+    updateActivitySummary(); // Update activity summary in real-time
+    updateStats();
+    showNotification("Fast food eaten! -8 health, +6 mood", "Success");
+  } else {
+    showErrorNotification("Need half an hour to eat fast food!", "Dismiss");
+  }
+
+}
+
+function eatHealthy() {
+  if (player.time >= 0.5){
+    player.health += 6;
+    player.mood -= 4;
+    player.time -= 0.5;
+    player.timesEatenHealthy++;
+    player.fedCounter++;
+    
+    updateActivitySummary(); // Update activity summary in real-time
+    updateStats();
+    showNotification("Healthy food eaten! +6 health, -4 mood", "Success");
+  } else {
+    showErrorNotification("Need half an hour to eat healthy food!", "Dismiss");
+  }
+}
+
+function trainPet() {
+    
+}
 // Schedule/To-Do: costs 1-2 hours depending on difficulty
 // ===== TO-DO LIST =====
 const TODO_LIST = [
-  "Feed your pet (3+ times today)",
-  "Play with your pet (4+ times today)",
+  "Feed your pet",
+  "Play with your pet",
   "Clean your pet (once today)",
   "Exercise (2 hours)",
   "Hang out with friends (3 hours)",
@@ -1217,6 +1312,7 @@ const TODO_LIST = [
   "Maintain pet health above 80",
   "Maintain pet energy above 80",
   "Keep pet mood positive",
+  "Eat food (1 hour)",
 ];
 
 let completedTodos = {}; // Track completed tasks for the current day
@@ -1469,6 +1565,10 @@ function sleep() {
     darkOverlay.style.opacity = "0";
     setTimeout(() => {
       darkOverlay.style.visibility = "hidden";
+      const eventId = triggerRandomEvent();
+      if (eventId) {
+        console.log(`Triggered random event at day start: ${eventId}`);
+      }
     }, 500);
   }, restPeriodMs);
 }

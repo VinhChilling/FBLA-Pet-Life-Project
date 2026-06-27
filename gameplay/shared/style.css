@@ -101,6 +101,9 @@ body {
   font-size: 1.1rem;
 }
 
+button, input, select, textures {
+  font-family: inherit;
+}
 /* ===== SETUP FORM ===== */
 #setup {
   display: flex;
@@ -359,7 +362,7 @@ button:active {
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
-  border-radius: 999px;
+  border-radius: 0px;
   background: linear-gradient(135deg, #dbeafe, #fef3c7);
   border: 2px solid #2563eb;
   font-size: 0.95rem;
@@ -599,6 +602,56 @@ button:active {
   visibility: hidden;
   transition: opacity 0.5s ease;
   z-index: 9999;
+}
+
+.save-indicator {
+  position: relative;
+  z-index: 10002;
+  font-size: 0.85rem;
+  color: #10b981;
+  font-weight: 600;
+  animation: fadeInOut 2s ease;
+  padding: 4px 8px;
+  background: #f0fdf4;
+  border-radius: 0;
+}
+
+.day-event-notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-12px);
+  z-index: 10003;
+  background: #0ea5e9;
+  color: white;
+  border: 1px solid #0284c7;
+  padding: 12px 18px;
+  border-radius: 0;
+  font-size: 0.95rem;
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.18);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.day-event-notification.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.day-event-notification.info {
+  background: #0ea5e9;
+  border-color: #0284c7;
+}
+
+.day-event-notification.error {
+  background: #ef4444;
+  border-color: #b91c1c;
+}
+
+.day-event-notification.warning {
+  background: #f59e0b;
+  border-color: #d97706;
 }
 
 /* ===== RESPONSIVE DESIGN ===== */

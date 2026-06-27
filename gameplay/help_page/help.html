@@ -82,146 +82,206 @@
             highest score possible.
           </p>
           <p>
-            <strong>Scoring:</strong> You start each day with 100 potential
-            points. Your daily score is reduced based on how well you care for
-            your pet and yourself. The better you balance both, the more points
-            you keep!
+            <strong>Scoring:</strong> Each day starts with 100 potential points.
+            Your daily score is determined by pet care, self-care, efficiency,
+            and penalties.
           </p>
         </div>
 
         <div class="help-section">
-          <h2>Rules</h2>
+          <h2>Start & Save</h2>
+          <p>
+            Enter your player name and pet name, choose a pet type, then start
+            the game. Difficulty changes your starting coins and stats.
+          </p>
+          <ul>
+            <li><strong>Easy</strong> – more starting coins and higher stats</li>
+            <li><strong>Normal</strong> – balanced starting resources</li>
+            <li><strong>Hard</strong> – fewer coins and tougher conditions</li>
+          </ul>
+          <p>
+            The game saves automatically to local storage, and you can also
+            load or clear your save from the game screen.
+          </p>
+        </div>
+
+        <div class="help-section">
+          <h2>Daily Cycle</h2>
+          <p>
+            You have <strong>24 hours</strong> per day to complete actions. When
+            your time runs out or you choose to sleep, the day ends and the next
+            day begins.
+          </p>
+          <p>
+            After sleeping, the new day starts with a visible notification if a
+            random event occurs.</p>
+        </div>
+
+        <div class="help-section">
+          <h2>Pet Care Actions</h2>
           <div class="rules-grid">
             <div class="rule-card">
-              <h3>🍖 Feeding</h3>
+              <h3>🍖 Feed Pet</h3>
               <p>
-                Feed your pet at least <strong>3 times per day</strong>. Each
-                feeding costs $5 and increases energy by 12.
+                Feeding increases your pet's energy and health. You need at least
+                <strong>3 feedings per day</strong> to avoid penalties.
               </p>
               <p class="warning">
-                ⚠️ If unfed: -35 energy, -20 health, pet becomes Hungry
+                ⚠️ Underfeeding causes -35 energy, -20 health, and Hungry mood.
               </p>
             </div>
 
             <div class="rule-card">
-              <h3>🎾 Playing</h3>
+              <h3>🎾 Play with Pet</h3>
               <p>
-                Play with your pet at least <strong>4 times per day</strong>.
-                Each play session costs 1 hour.
+                Playing uses 1 hour and improves mood and health. Aim for
+                <strong>4 plays per day</strong>.
               </p>
               <p class="warning">
-                ⚠️ If not played enough: -20 energy, -15 health, pet becomes
-                Bored
+                ⚠️ Insufficient play causes -20 energy, -15 health, and Bored mood.
               </p>
             </div>
 
             <div class="rule-card">
-              <h3>Cleaning</h3>
+              <h3>🛁 Clean Pet</h3>
               <p>
-                Clean your pet <strong>once per day</strong>. Costs $3 and 2
-                hours. Improves health by 5.
+                Clean your pet once per day. It costs $3 and 2 hours and improves
+                health by 5.
               </p>
               <p class="warning">
-                ⚠️ If not cleaned: -10 energy, -15 health, pet becomes Dirty
+                ⚠️ If not cleaned, pet loses energy and health and becomes Dirty.
               </p>
             </div>
 
             <div class="rule-card">
-              <h3>Vet Visits</h3>
+              <h3>🏥 Visit Vet</h3>
               <p>
-                Visit the vet <strong>once per week (every 7 days)</strong>.
-                Costs $30 and 4 hours. Fully restores health to 100.
+                The vet should be visited once every 7 days. It costs $40 and 4
+                hours and restores health.
               </p>
               <p class="warning">
-                ⚠️ If missed: -50 energy, -50 health, pet becomes Sick
+                ⚠️ Missing weekly vet care results in major energy and health penalties.
               </p>
-            </div>
-
-            <div class="rule-card">
-              <h3>Sleep</h3>
-              <p>
-                Sleep when you're done with daily activities. Average
-                <strong>8+ hours</strong> for best results.
-              </p>
-              <p class="warning">
-                ⚠️ Less than 6h average: -25 health, -25 mood, -20 points
-              </p>
-              <p class="bonus">✓ 8+ hours: +15 health, +15 mood</p>
-            </div>
-
-            <div class="rule-card">
-              <h3>Self-Care</h3>
-              <p>Take care of yourself daily:</p>
-              <ul>
-                <li><strong>Exercise</strong> (2h): +10 health, +10 mood</li>
-                <li><strong>Hangout</strong> (3h): +12 health, +20 mood</li>
-                <li><strong>Read</strong> (1h): +3 health, +5 mood</li>
-              </ul>
-              <p class="warning">⚠️ Skip these to lose points and stats!</p>
             </div>
           </div>
         </div>
 
         <div class="help-section">
-          <h2>Currency</h2>
-          <p>
-            <strong>Coins</strong> are your primary currency. You start with 10
-            coins and can earn more by doing chores.
-          </p>
-
-          <div class="currency-table">
-            <div class="currency-row">
-              <span class="action-name">Do Chore</span>
-              <span class="action-cost">-2 hours</span>
-              <span class="action-result">+$8</span>
+          <h2>Player Self-Care</h2>
+          <div class="rules-grid">
+            <div class="rule-card">
+              <h3>🏃 Exercise</h3>
+              <p>Costs 2 hours, gives +10 health and +10 mood.</p>
             </div>
-            <div class="currency-row">
-              <span class="action-name">Feed Pet</span>
-              <span class="action-cost">-$5</span>
-              <span class="action-result">+12 energy</span>
+            <div class="rule-card">
+              <h3>📚 Read</h3>
+              <p>Costs 1 hour, gives +3 health and +5 mood.</p>
             </div>
-            <div class="currency-row">
-              <span class="action-name">Clean Pet</span>
-              <span class="action-cost">-$3, -2h</span>
-              <span class="action-result">+5 health</span>
+            <div class="rule-card">
+              <h3>👯 Hangout</h3>
+              <p>Costs 3 hours, gives +12 health and +20 mood.</p>
             </div>
-            <div class="currency-row">
-              <span class="action-name">Vet Visit</span>
-              <span class="action-cost">-$30, -4h</span>
-              <span class="action-result">100 health</span>
+            <div class="rule-card">
+              <h3>💼 Work</h3>
+              <p>Costs 3 hours and earns +$15.</p>
+            </div>
+            <div class="rule-card">
+              <h3>🧹 Do Chores</h3>
+              <p>Costs 2 hours and earns +$8.</p>
             </div>
           </div>
+        </div>
 
-          <p class="tip">
-            <strong>💡 Tip:</strong> Budget wisely! Vet visits are expensive but
-            essential once per week. Do chores regularly to maintain a healthy
-            coin balance.
+        <div class="help-section">
+          <h2>Food Choices</h2>
+          <p>
+            The shop offers different food and toy tiers. Better quality food and
+            toys reduce requirements and help your pet recover faster.
+          </p>
+          <p>
+            Premium food and toys expire after 7 days, after which they revert to basic quality.
+          </p>
+          <p class="warning">
+            ⚠️ Keep track of expiration so you don't lose your upgrades.
           </p>
         </div>
 
         <div class="help-section">
-          <h2>Time Management</h2>
+          <h2>Fast Food & Healthy Eating</h2>
           <p>
-            You have <strong>24 hours</strong> each day. When time runs out, you
-            automatically sleep. Plan your activities carefully to fit
-            everything in!
+            You can choose quick food or healthy meals:
+          </p>
+          <ul>
+            <li><strong>Fast food</strong> takes 0.5 hours, increases mood, but deducts health.</li>
+            <li><strong>Healthy food</strong> takes 0.5 hours, increases health, but lowers mood a little.</li>
+          </ul>
+        </div>
+
+        <div class="help-section">
+          <h2>To-Do List & Scheduling</h2>
+          <p>
+            Buy the schedule feature in the shop to create a daily to-do list and
+            schedule one action per day.
+          </p>
+          <ul>
+            <li><strong>Create To-Do List</strong>: costs 2 hours and improves mood.</li>
+            <li><strong>Schedule Action</strong>: costs 2 hours and gives a health/mood boost.</li>
+            <li>You can only create a to-do list once per day and schedule once per day.</li>
+          </ul>
+        </div>
+
+        <div class="help-section">
+          <h2>Random Events</h2>
+          <p>
+            At the beginning of each new day after sleeping, the game may trigger
+            a random event. These events are shown as a notification banner.
+          </p>
+          <ul>
+            <li><strong>Sickness</strong> – your pet loses health and requires vet care.</li>
+            <li><strong>Extra Hunger</strong> – your pet needs more feedings and loses energy.</li>
+            <li><strong>Extra Energy Need</strong> – your pet wants more play and gains energy.</li>
+          </ul>
+        </div>
+
+        <div class="help-section">
+          <h2>Sleep Mechanics</h2>
+          <p>
+            Sleep resets your daily time to 24 hours and gives your pet rest
+            energy. If you sleep with very little time left, both you and your
+            pet take penalties.
+          </p>
+          <p class="warning">
+            ⚠️ Sleeping with 7 or fewer hours left triggers sleep punishment.
+          </p>
+        </div>
+
+        <div class="help-section">
+          <h2>Game Interface</h2>
+          <p>
+            Use the shop button for upgrades, the sleep button to end your day,
+            and the save indicator to confirm progress is saved. The analytics
+            dashboard shows your performance over time.
+          </p>
+        </div>
+
+        <div class="help-section">
+          <h2>End Conditions</h2>
+          <p>
+            Your game ends if your pet's health reaches zero. Keep your pet fed,
+            happy, and healthy to survive as many days as possible.
           </p>
         </div>
 
         <div class="help-section">
           <h2>Scoring System</h2>
           <p>
-            You start each day with 100 potential points. Points are deducted
-            for:
+            Daily score is calculated from:
           </p>
           <ul>
-            <li>Poor sleep habits (6-8h: -10 pts, &lt;6h: -20 pts)</li>
-            <li>Pet health below 80 (-15 pts) or below 50 (-25 pts)</li>
-            <li>Pet energy below 80 (-5 pts) or below 50 (-15 pts)</li>
-            <li>Pet in negative mood state (-10 pts)</li>
-            <li>Not exercising (-10 pts)</li>
-            <li>Not hanging out with friends (-15 pts)</li>
-            <li>Not reading (-5 pts)</li>
+            <li>Pet care performance</li>
+            <li>Player care performance</li>
+            <li>Time and money efficiency</li>
+            <li>Penalties for neglect or low health/mood</li>
           </ul>
         </div>
       </div>
@@ -362,6 +422,48 @@
                   (2 hours), exercise (2 hours), read (1 hour), hangout with
                   friends (3 hours). This leaves 2-6 hours for sleep. On day 7,
                   budget extra time and money for the vet!
+                </p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question" onclick="toggleFAQ(this)">
+                <span>What are random day-start events?</span>
+                <span class="faq-icon">+</span>
+              </button>
+              <div class="faq-answer">
+                <p>
+                  At the start of a new day after sleeping, you may see a random
+                  event banner. Events can make your pet sick, extra hungry, or
+                  extra playful, and they affect your pet's stats for that day.
+                </p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question" onclick="toggleFAQ(this)">
+                <span>How does the to-do list and schedule work?</span>
+                <span class="faq-icon">+</span>
+              </button>
+              <div class="faq-answer">
+                <p>
+                  You must purchase the schedule feature in the shop before
+                  creating a to-do list. Creating the list costs 2 hours, and
+                  scheduling also costs 2 hours. Each can only be done once per day.
+                </p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question" onclick="toggleFAQ(this)">
+                <span>What happens when food or toys expire?</span>
+                <span class="faq-icon">+</span>
+              </button>
+              <div class="faq-answer">
+                <p>
+                  Premium food and toys expire after 7 days and revert to basic
+                  quality. This means you will need more feedings or play sessions
+                  again until you repurchase upgrades.
                 </p>
               </div>
             </div>

@@ -12,7 +12,7 @@ const PET_DESCRIPTIONS = {
 
 const DIFFICULTY_CONFIG = {
   easy: { info: "Easy: Start with $30", buttonId: "easyBtn" },
-  normal: { info: "Normal: Start with $10", buttonId: "normalBtn" },
+  normal: { info: "Normal: Start with $15", buttonId: "normalBtn" },
   hard: { info: "Hard: Start with only $5", buttonId: "hardBtn" },
 };
 
