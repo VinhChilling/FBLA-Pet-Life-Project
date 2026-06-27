@@ -260,14 +260,14 @@ window.addEventListener("DOMContentLoaded", function () {
 });
 
 // Set default difficulty to normal
-function setDefaultDifficulty() {
-  player.difficulty = "normal";
-  player.coins = 10;
-  const normalBtn = document.getElementById("normalBtn");
-  const difficultyInfo = document.getElementById("difficultyInfo");
-  if (normalBtn) normalBtn.classList.add("active");
-  if (difficultyInfo) difficultyInfo.textContent = "Normal: Start with $10";
-}
+// function setDefaultDifficulty() {
+//   player.difficulty = "normal";
+//   player.coins = 15;
+//   const normalBtn = document.getElementById("normalBtn");
+//   const difficultyInfo = document.getElementById("difficultyInfo");
+//   if (normalBtn) normalBtn.classList.add("active");
+//   if (difficultyInfo) difficultyInfo.textContent = "Normal: Start with $15";
+// }
 
 //Maps pet types to their image paths
 const petImages = {
@@ -355,7 +355,7 @@ function selectDifficulty(level) {
 
   const difficultyMap = {
     easy: { coins: 30, info: "Easy: Start with $30", btn: "easyBtn" },
-    normal: { coins: 10, info: "Normal: Start with $10", btn: "normalBtn" },
+    normal: { coins: 15, info: "Normal: Start with $15", btn: "normalBtn" },
     hard: { coins: 5, info: "Hard: Start with only $5", btn: "hardBtn" },
   };
 
@@ -407,10 +407,20 @@ function startGameInternal() {
     player.coins = 30;
     pet.energy = 90;
     pet.health = 95;
+    player.health = 90;
+    player.mood = 75;
+  } else if (player.difficulty === "normal") {
+    player.coins = 15;
+    pet.energy = 75;
+    pet.health = 90;
+    player.health = 90;
+    player.mood = 75;
   } else if (player.difficulty === "hard") {
     player.coins = 5;
     pet.energy = 60;
     pet.health = 70;
+    player.health = 90;
+    player.mood = 75;
   }
 
   // Switch to game screen
@@ -1088,7 +1098,7 @@ function exercise() {
   }
 }
 
-// Do chores: costs 2 hours, earn $5
+// Do chores: costs 2 hours, earn $8
 function doChore() {
   if (player.time >= 2) {
     player.coins += 8;
