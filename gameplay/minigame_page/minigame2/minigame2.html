@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shell Game Training</title>
+    <link rel="stylesheet" href="../minigameStyles.css" />
+  </head>
+  <body>
+    <div class="minigame-shell">
+      <div class="minigame-header">
+        <h1>Shell Game</h1>
+        <p>Watch the cups move and guess which one hides your pet's treasure.</p>
+      </div>
+
+      <div class="minigame-info">
+        <div class="stat-pill">Difficulty: <span id="difficultyLabel">Easy</span></div>
+        <div class="stat-pill">Track closely: <span id="hintLabel">1 shuffle</span></div>
+      </div>
+
+      <div class="difficulty-panel" id="difficultyPanel">
+        <button class="difficulty-button active" data-level="easy">Easy</button>
+        <button class="difficulty-button" data-level="medium">Medium</button>
+        <button class="difficulty-button" data-level="hard">Hard</button>
+      </div>
+
+      <div class="cups-board" id="cupsBoard" aria-label="Shell game board"></div>
+
+      <div class="action-area">
+        <button id="startBtn">Start Shuffle</button>
+        <button id="guessBtn" disabled>Pick Cup</button>
+        <button type="button" onclick="window.location.href='../minigameInstructions/miniInstructions.html?game=minigame2'">How to Play</button>
+        <button id="backBtn">Return to Game</button>
+      </div>
+
+      <div id="statusMessage" class="status-message" role="status" aria-live="polite"></div>
+    </div>
+
+    <script src="minigame2.js"></script>
+  </body>
+</html>

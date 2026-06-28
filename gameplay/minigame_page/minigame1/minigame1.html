@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pet Training Maze</title>
+    <link rel="stylesheet" href="../minigameStyles.css" />
+  </head>
+  <body>
+    <div class="minigame-shell">
+      <div class="minigame-header">
+        <h1>Training Maze</h1>
+        <p>Guide your pet through the maze and reach the exit safely.</p>
+      </div>
+
+      <div class="minigame-info">
+        <div class="stat-pill">Moves: <span id="moveCount">0</span></div>
+        <div class="stat-pill">Best: <span id="bestScore">0</span></div>
+        <div class="stat-pill">Goal: <span id="goalLabel">Exit</span></div>
+      </div>
+
+      <div id="mazeBoard" class="maze-board" aria-label="Training maze"></div>
+
+      <div class="minigame-controls">
+        <button id="restartBtn">Restart</button>
+        <button type="button" onclick="window.location.href='../minigameInstructions/miniInstructions.html?game=minigame1'">How to Play</button>
+        <button id="backBtn">Return to Game</button>
+      </div>
+
+      <div id="statusMessage" class="status-message" role="status" aria-live="polite"></div>
+    </div>
+
+    <script src="minigame1.js"></script>
+  </body>
+</html>

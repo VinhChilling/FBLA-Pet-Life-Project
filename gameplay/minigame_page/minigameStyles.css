@@ -1,0 +1,220 @@
+:root {
+  color-scheme: dark;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #11213a, #1c4c6f);
+  color: white;
+  display: grid;
+  place-items: center;
+}
+
+.minigame-shell {
+  width: min(92vw, 760px);
+  background: rgba(5, 15, 30, 0.92);
+  border: 2px solid rgba(255,255,255,0.12);
+  padding: 24px;
+  box-shadow: 0 18px 45px rgba(0,0,0,0.35);
+}
+
+.minigame-header h1 {
+  margin: 0 0 8px;
+  font-size: 2rem;
+}
+
+.minigame-header p {
+  margin: 0 0 16px;
+  color: #cfe8ff;
+}
+
+.minigame-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.stat-pill {
+  background: rgba(255,255,255,0.12);
+  padding: 8px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.maze-board {
+  display: grid;
+  justify-content: center;
+  gap: 0;
+  margin: 16px 0;
+}
+
+.maze-cell {
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(255,255,255,0.08);
+  display: grid;
+  place-items: center;
+  background: #f8fbff;
+  box-sizing: border-box;
+}
+
+.maze-cell.wall {
+  background: #2f4a67;
+}
+
+.maze-cell.exit {
+  background: #2dd4bf;
+}
+
+.maze-cell.player {
+  background: #fbbf24;
+  font-size: 1.3rem;
+}
+
+.minigame-controls {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+button {
+  border: none;
+  cursor: pointer;
+  padding: 10px 14px;
+  font-weight: 700;
+  background: #38bdf8;
+  color: white;
+}
+
+button:hover {
+  opacity: 0.92;
+}
+
+.status-message {
+  margin-top: 16px;
+  min-height: 24px;
+  text-align: center;
+  color: #dbeafe;
+}
+
+.difficulty-panel {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.difficulty-button {
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.08);
+  color: white;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  min-width: 100px;
+}
+
+.difficulty-button.active,
+.difficulty-button:hover {
+  background: #38bdf8;
+}
+
+.cups-board {
+  position: relative;
+  width: 100%;
+  min-height: 220px;
+  margin: 14px 0;
+}
+
+.cup-card {
+  position: absolute;
+  width: 156px;
+  height: 180px;
+  border-radius: 16px;
+  background: transparent;
+  border: none;
+  display: grid;
+  place-items: center;
+  transition: left 0.35s ease, transform 0.25s ease, opacity 0.25s ease;
+  cursor: pointer;
+  padding: 0;
+}
+
+.cup-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 10px rgba(0,0,0,0.3));
+  pointer-events: none;
+}
+
+.cup-card .cup-shadow {
+  position: absolute;
+  bottom: 8px;
+  width: 70%;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.24);
+  filter: blur(8px);
+}
+
+.cup-card.enabled:hover {
+  transform: translateY(-6px) scale(1.02);
+}
+
+.cup-card.disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.cup-card.cup-reveal {
+  animation: cupPulse 0.8s ease-in-out infinite alternate;
+}
+
+.cup-item {
+  position: absolute;
+  bottom: 30px;
+  font-size: 2rem;
+  animation: itemPop 0.45s ease-out;
+  z-index: 2;
+}
+
+@keyframes cupPulse {
+  from { transform: scale(0.98); }
+  to { transform: scale(1.03); }
+}
+
+@keyframes itemPop {
+  0% { transform: translateY(8px) scale(0.7); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.action-area {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.action-area button {
+  min-width: 120px;
+}
+
+.game-canvas-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+#gameCanvas {
+  width: 100%;
+  max-width: 640px;
+  border-radius: 18px;
+  border: 2px solid rgba(255,255,255,0.16);
+  background: linear-gradient(180deg, #1d4ed8 0%, #0f172a 100%);
+}

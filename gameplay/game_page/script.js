@@ -108,6 +108,9 @@ let player = {
   timesExercised: 0,
   timesRead: 0,
   timesScheduled: 0,
+  timesTrained: 0,
+  timesEatenFastFood: 0,
+  timesEatenHealthy: 0,
 
   // Shop upgrades
   foodTier: "basic",
@@ -534,6 +537,9 @@ function applyGameStateDefaults() {
     timesExercised: 0,
     timesRead: 0,
     timesScheduled: 0,
+    timesTrained: 0,
+    timesEatenFastFood: 0,
+    timesEatenHealthy: 0,
     foodTier: "basic",
     toyTier: "basic",
     hasScheduleFeature: false,
@@ -580,6 +586,32 @@ function showDayEventNotification(message, type = "info", duration = 4000) {
 function showNotification(message, type = "Info") {
   const prefix = type === "Error" ? "Error: " : "";
   showSaveIndicator(prefix + message);
+}
+
+function applyPendingMinigameResult() {
+  const raw = sessionStorage.getItem("petLifeMinigameResult");
+  if (!raw) return;
+
+  try {
+    const result = JSON.parse(raw);
+    if (!result || typeof result !== "object") return;
+
+    player.health = clamp((player.health || 90) + (result.playerHealthDelta || 0), 0, 100);
+    player.mood = clamp((player.mood || 75) + (result.playerMoodDelta || 0), 0, 100);
+    pet.energy = clamp((pet.energy || 75) + (result.petEnergyDelta || 0), 0, 100);
+    pet.health = clamp((pet.health || 90) + (result.petHealthDelta || 0), 0, 100);
+
+    if (result.message) {
+      showNotification(result.message, "Success");
+    }
+
+    updateStats();
+    saveGame();
+  } catch (error) {
+    console.error("Failed to apply minigame result:", error);
+  } finally {
+    sessionStorage.removeItem("petLifeMinigameResult");
+  }
 }
 
 // Load game from backend (if authenticated) or localStorage with error handling
@@ -651,6 +683,7 @@ async function loadGame() {
     updateMainPetImage(pet.type, pet.evolutionStage ?? 0);
 
     updateDayDisplay();
+    applyPendingMinigameResult();
     updateStats();
   } catch (error) {
     console.error("Error loading game:", error);
@@ -868,6 +901,32 @@ function processSleepHours() {
   } else {
     player.avgSleepHours = player.time; // First day, use current sleep hours
   }
+  
+  if (player.lastSleepHours >= 8) {
+    player.health += 5;
+    player.mood += 5;
+
+    pet.health += 5;
+    pet.energy += 5;
+  } else if (player.lastSleepHours >= 6) {
+    player.health -= 5;
+    player.mood -= 5;
+
+    pet.health -= 5;
+    pet.energy -= 5;
+  } else if (player.lastSleepHours >= 4) {
+    player.health -= 20;
+    player.mood -= 20;
+
+    pet.health -= 20;
+    pet.energy -= 20;
+  } else {
+    player.health -= 40;
+    player.mood -= 40;
+
+    pet.health -= 40;
+    pet.energy -= 40;
+  }
 }
 
 // Calculate daily score based on player and pet performance
@@ -907,11 +966,11 @@ function calculateDailyScore() {
 
   // ===== PLAYER CARE (0-35 points) =====
   // Sleep (10): 8+ hours is good
-  if (player.avgSleepHours >= 8) {
+  if (player.lastSleepHours >= 8) {
     playerCarePoints += 10;
-  } else if (player.avgSleepHours >= 6) {
+  } else if (player.lastSleepHours >= 6) {
     playerCarePoints += 5;
-  } else if (player.avgSleepHours >= 4) {
+  } else if (player.lastSleepHours >= 4) {
     playerCarePoints += 2;
   }
 
@@ -1175,7 +1234,7 @@ function exercise() {
 // Do chores: costs 2 hours, earn $8
 function doChore() {
   if (player.time >= 2) {
-    player.coins += 8;
+    player.coins += 5;
     player.time -= 2;
     pet.timesDoingChores++;
     
@@ -1296,7 +1355,35 @@ function eatHealthy() {
 }
 
 function trainPet() {
-    
+    if (player.time >= 1) {
+      player.time -= 1;
+      player.timesTrained++;
+      updateActivitySummary();
+      saveGame();
+      const minigameChoice = Math.random();
+      let minigameType = minigameChoice < 0.4 ? "minigame1" : minigameChoice < 0.8 ? "minigame2" : "minigame3";
+      if (minigameType == "minigame3") {
+        if (pet.type == "Dragon") {
+          minigameType = "minigame3";
+        } else if (pet.type == "Dog") {
+          minigameType = "minigame4";
+        } else if (pet.type == "Cat") {
+          minigameType = "minigame5";
+        }
+        
+      }
+      const minigameState = {
+        pet: JSON.parse(JSON.stringify(pet)),
+        player: JSON.parse(JSON.stringify(player)),
+        dailyStats: JSON.parse(JSON.stringify(dailyStats)),
+        timestamp: new Date().toISOString(),
+      };
+      sessionStorage.setItem("petLifeMinigameState", JSON.stringify(minigameState));
+      showNotification("Starting training maze...", "Success");
+      window.location.href = `../minigame_page/${minigameType}/${minigameType}.html`;
+    } else {
+      showErrorNotification("Need 1 hour to train pet!", "Dismiss");
+    }
 }
 // Schedule/To-Do: costs 1-2 hours depending on difficulty
 // ===== TO-DO LIST =====

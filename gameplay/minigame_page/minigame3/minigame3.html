@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dragon Flappy Flight</title>
+    <link rel="stylesheet" href="../minigameStyles.css" />
+  </head>
+  <body>
+    <div class="minigame-shell">
+      <div class="minigame-header">
+        <h1>Dragon Flight</h1>
+        <p>Keep your dragon flying through the canyon and chase the highest distance.</p>
+      </div>
+
+      <div class="minigame-info">
+        <div class="stat-pill">Distance: <span id="distanceLabel">0</span></div>
+        <div class="stat-pill">Best: <span id="bestLabel">0</span></div>
+      </div>
+
+      <div class="game-canvas-wrap">
+        <canvas id="gameCanvas" width="640" height="420"></canvas>
+      </div>
+
+      <div class="action-area">
+        <button id="startBtn">Start Flight</button>
+        <button type="button" onclick="window.location.href='../minigameInstructions/miniInstructions.html?game=minigame3'">How to Play</button>
+        <button id="backBtn">Return to Game</button>
+      </div>
+
+      <div id="statusMessage" class="status-message" role="status" aria-live="polite"></div>
+    </div>
+
+    <script src="minigame3.js"></script>
+  </body>
+</html>

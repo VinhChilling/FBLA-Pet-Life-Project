@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minigame Help</title>
+  <link rel="stylesheet" href="miniInstructions.css" />
+</head>
+<body>
+  <main class="instructions-shell">
+    <h1>Pet Training Minigames</h1>
+    <p class="intro">Choose a minigame below to learn how it works and how your choices affect your pet’s stats.</p>
+
+    <div class="game-grid" id="gameGrid"></div>
+
+    <div class="back-row">
+      <a id="backLink" class="back-btn" href="../minigame1/minigame1.html">Back to Minigame</a>
+    </div>
+  </main>
+
+  <script>
+    const games = {
+      minigame1: {
+        title: 'Training Maze',
+        description: 'Guide your pet through the maze and reach the exit as efficiently as possible.',
+        controls: ['Use arrow keys to move.', 'Reach the exit to finish the round.'],
+        rewards: {
+          success: 'Player health +8, player mood +10, pet energy +10, pet health +8',
+          failure: 'Player health -4, player mood -4, pet energy -8, pet health -6'
+        }
+      },
+      minigame2: {
+        title: 'Shell Game',
+        description: 'Watch the cups, remember where the treasure is, and pick the right cup.',
+        controls: ['Start the shuffle.', 'Watch closely and choose the correct cup.'],
+        rewards: {
+          success: 'Player health +4 to +8, player mood +8 to +12, pet energy +8 to +12, pet health +4 to +8',
+          failure: 'Player health -0 to -10, player mood -8 to -12, pet energy -4 to -10, pet health -6 to -12'
+        }
+      },
+      minigame3: {
+        title: 'Dragon Flight',
+        description: 'Keep the dragon flying by tapping or pressing space to avoid obstacles.',
+        controls: ['Tap or press Space to flap.', 'Stay airborne and pass as many obstacles as you can.'],
+        rewards: {
+          success: 'Excellent flight: player health +12, player mood +20, pet energy +30, pet health +30',
+          failure: 'Poor flight: player health -12, player mood -10, pet energy -12, pet health -10'
+        }
+      },
+      minigame4: {
+        title: 'Dog Dash',
+        description: 'Help your dog jump over obstacles and keep running for a high score.',
+        controls: ['Press Space or tap to jump.', 'Duck to avoid flying obstacles if needed.'],
+        rewards: {
+          success: 'High score: player health +12, player mood +20, pet energy +30, pet health +30',
+          failure: 'Low score: player health -12, player mood -10, pet energy -12, pet health -10'
+        }
+      },
+      minigame5: {
+        title: 'Cat Chase',
+        description: 'Move the cat through the maze, use stamina, and catch the mouse before time runs out.',
+        controls: ['Use arrow keys or WASD to move.', 'Hold Shift to dash, press Space for a temporary speed boost.'],
+        rewards: {
+          success: 'Easy: player health +3, player mood +0, pet energy +8, pet health +5; Medium: +6 / +10 / +15 / +10; Hard: +12 / +20 / +30 / +30',
+          failure: 'Easy: -3 / 0 / -8 / -5; Medium: -6 / -10 / -15 / -10; Hard: -12 / -20 / -30 / -30'
+        }
+      }
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const selectedGame = params.get('game') || 'minigame1';
+    const gameGrid = document.getElementById('gameGrid');
+    const backLink = document.getElementById('backLink');
+
+    Object.entries(games).forEach(([key, game]) => {
+      const card = document.createElement('article');
+      card.className = 'game-card';
+      if (key === selectedGame) card.classList.add('active');
+      card.innerHTML = `
+        <h2>${game.title}</h2>
+        <p>${game.description}</p>
+        <h3>Controls</h3>
+        <ul>${game.controls.map((item) => `<li>${item}</li>`).join('')}</ul>
+        <h3>Stat Changes</h3>
+        <p><strong>Success:</strong> ${game.rewards.success}</p>
+        <p><strong>Failure:</strong> ${game.rewards.failure}</p>
+      `;
+      gameGrid.appendChild(card);
+    });
+
+    const activeGame = games[selectedGame] || games.minigame1;
+    document.title = `${activeGame.title} Help`;
+    const heading = document.querySelector('.instructions-shell h1');
+    heading.textContent = `${activeGame.title} Help`;
+    const intro = document.querySelector('.intro');
+    intro.textContent = activeGame.description;
+    const backHref = `../${selectedGame}/${selectedGame}.html`;
+    backLink.href = backHref;
+    backLink.textContent = `Back to ${activeGame.title}`;
+  </script>
+</body>
+</html>

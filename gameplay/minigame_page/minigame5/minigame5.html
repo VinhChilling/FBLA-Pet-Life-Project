@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minigame 5: Cat Chase</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, #23252e, #0b0d12 70%);
+      font-family: Arial, sans-serif;
+      color: #f1f3f7;
+    }
+
+    .shell {
+      width: min(95vw, 980px);
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(18, 24, 42, 0.95);
+      box-shadow: 0 20px 48px rgba(0, 0, 0, 0.45);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.95rem;
+      text-align: center;
+      letter-spacing: 0.03em;
+    }
+
+    .top-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin: 16px 0 12px;
+    }
+
+    .stats,
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .stats span,
+    .controls label {
+      font-size: 0.96rem;
+    }
+
+    .controls select,
+    .controls button {
+      border: none;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 0.96rem;
+      cursor: pointer;
+    }
+
+    .controls select {
+      min-width: 114px;
+      background: #1e2436;
+      color: #f1f3f7;
+    }
+
+    .controls button {
+      background: #6a58ff;
+      color: white;
+      transition: transform 0.15s ease;
+    }
+
+    .controls button:hover {
+      transform: translateY(-1px);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      max-width: 940px;
+      border-radius: 16px;
+      background: #10151f;
+      margin: 0 auto;
+      box-shadow: inset 0 0 40px rgba(255, 60, 60, 0.08);
+    }
+
+    .footer {
+      margin-top: 12px;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .meter {
+      min-width: 180px;
+      height: 16px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      overflow: hidden;
+    }
+
+    .meter-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ff5c5c 0%, #ffb26f 100%);
+      width: 0%;
+      transition: width 0.1s ease;
+    }
+
+    .message {
+      margin: 10px 0 0;
+      text-align: center;
+      color: #e4e7ff;
+      min-height: 22px;
+    }
+  </style>
+</head>
+<body>
+    
+  <div class="shell">
+    <h1>Cat Chase Training</h1>
+    <div class="top-bar">
+      <div class="stats">
+        <span>Time: <strong id="timer">--</strong></span>
+        <span>Stamina: <strong id="staminaLabel">100%</strong></span>
+        <span>Difficulty: <strong id="difficultyLabel">Easy</strong></span>
+      </div>
+      <div class="controls">
+        <label>
+          Difficulty:
+          <select id="difficultySelect">
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </label>
+        <button id="startBtn">Start</button>
+        <button id="restartBtn">Restart</button>
+        <button type="button" onclick="window.location.href='../minigameInstructions/miniInstructions.html?game=minigame5'">How to Play</button>
+        <button id="backBtn">Back</button>
+      </div>
+    </div>
+    <canvas id="gameCanvas" width="940" height="620"></canvas>
+    <div class="footer">
+      <div class="meter" aria-label="Stamina meter">
+        <div class="meter-fill" id="staminaFill"></div>
+      </div>
+      <div class="message" id="statusMessage">Use arrow keys / WASD to move. Hold Shift + direction to dash.</div>
+    </div>
+  </div>
+  <script src="minigame5.js"></script>
+</body>
+</html>
