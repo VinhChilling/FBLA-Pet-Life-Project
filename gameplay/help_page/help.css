@@ -398,6 +398,37 @@ body {
   border: 1px solid rgba(15, 23, 42, 0.06);
 }
 
+.minigames-list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 16px 0;
+}
+
+.minigame-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.chance-pill {
+  background: #eef2ff;
+  color: #3730a3;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  min-width: 48px;
+  text-align: center;
+}
+
+.high-stakes {
+  background: #fff7ed;
+  border-left: 4px solid #fb923c;
+  padding: 12px;
+  border-radius: 6px;
+}
+
 .help-section h2 {
   margin: 0 0 16px 0;
   font-size: 1.5rem;
