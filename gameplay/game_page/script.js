@@ -37,7 +37,8 @@ function recordDailyStats() {
       timesExercised: player.timesExercised,
       timesSlept: player.timesSlept,
       timesRead: player.timesRead,
-      timesHangout: player.timesHangout
+      timesHangout: player.timesHangout,
+      timesTrained: player.timesTrained || 0,
     },
     timestamp: new Date().toISOString()
   };
@@ -1086,7 +1087,8 @@ function updateActivitySummary() {
     work: document.getElementById("workCount"),
     study: document.getElementById("studyCount"),
     exercise: document.getElementById("exerciseCount"),
-    sleep: document.getElementById("sleepCount")
+    sleep: document.getElementById("sleepCount"),
+    training: document.getElementById("trainingCount")
   };
   
   // Update each activity count if element exists
@@ -1098,6 +1100,7 @@ function updateActivitySummary() {
   if (activityElements.study) activityElements.study.textContent = player.timesStudied || 0;
   if (activityElements.exercise) activityElements.exercise.textContent = player.timesExercised || 0;
   if (activityElements.sleep) activityElements.sleep.textContent = player.timesSlept || 0;
+  if (activityElements.training) activityElements.training.textContent = player.timesTrained || 0;
   
   console.log("Activity summary updated:", {
     feed: pet.timesFed || 0,
@@ -1107,7 +1110,8 @@ function updateActivitySummary() {
     work: player.timesWorked || 0,
     study: player.timesStudied || 0,
     exercise: player.timesExercised || 0,
-    sleep: player.timesSlept || 0
+    sleep: player.timesSlept || 0,
+    training: player.timesTrained || 0
   });
 }
 
