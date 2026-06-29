@@ -20,7 +20,7 @@ const BLOCKED_WORDS = {
     "damn",
     "dick", "dicks",
     "piss",
-    "crap",
+    "crap", "retard"
   ],
 
   // Sexual content

@@ -4,95 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dog Dash Minigame</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #b7e0ff, #ffe8b7);
-      color: #2c2c2c;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
-
-    .game-shell {
-      width: min(92vw, 860px);
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
-    }
-
-    h1 {
-      margin: 0 0 8px;
-      font-size: 1.8rem;
-      text-align: center;
-    }
-
-    p {
-      margin: 6px 0;
-      text-align: center;
-    }
-
-    .hud {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin: 12px 0 16px;
-      font-weight: 600;
-    }
-
-    canvas {
-      width: 100%;
-      border: 4px solid #3b6c8f;
-      border-radius: 12px;
-      background: linear-gradient(to bottom, #8edcff 0%, #fdf4d0 70%, #d4a373 70%, #8e6b4a 100%);
-      display: block;
-    }
-
-    .controls {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 14px;
-      flex-wrap: wrap;
-    }
-
-    button {
-      border: none;
-      border-radius: 999px;
-      padding: 10px 16px;
-      font-size: 1rem;
-      cursor: pointer;
-      background: #3b6c8f;
-      color: white;
-      transition: transform 0.15s ease;
-    }
-
-    button:hover {
-      transform: translateY(-1px);
-    }
-
-    button.secondary {
-      background: #8a5a2d;
-    }
-  </style>
+  <link rel="stylesheet" href="../minigameStyles.css" />
 </head>
 <body>
-  <div class="game-shell">
-    <h1>Dog Dash</h1>
-    <p>Help your dog leap over balls, sticks, and bones to earn points. </p>
-    <p>Use the up and down arrow keys to control your dog.</p>
-    <div class="hud">
-      <span>Score: <strong id="score">0</strong></span>
-      <span>Best: <strong id="bestScore">0</strong></span>
-      <span id="statusMessage">Press Start or tap the space bar to begin.</span>
+  <div class="minigame-shell">
+    <div class="minigame-header">
+      <h1>Dog Dash</h1>
+      <p>Help your dog leap over balls, sticks, and bones to earn points.</p>
+      <p>Use the up and down arrow keys to control your dog.</p>
     </div>
-    <canvas id="gameCanvas" width="800" height="280"></canvas>
-    <div class="controls">
+
+    <div class="minigame-info hud">
+      <div class="stat-pill">Score: <strong id="score">0</strong></div>
+      <div class="stat-pill">Best: <strong id="bestScore">0</strong></div>
+      <div class="stat-pill" id="statusMessage">Press Start or tap the space bar to begin.</div>
+    </div>
+
+    <div class="game-canvas-wrap">
+      <canvas id="gameCanvas" width="800" height="280"></canvas>
+    </div>
+
+    <div class="action-area controls">
       <button id="startBtn">Start Game</button>
       <button id="restartBtn" class="secondary">Restart</button>
       <button type="button" onclick="window.location.href='../minigameInstructions/miniInstructions.html?game=minigame4'" class="secondary">How to Play</button>

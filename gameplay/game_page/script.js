@@ -1361,7 +1361,7 @@ function trainPet() {
       updateActivitySummary();
       saveGame();
       const minigameChoice = Math.random();
-      let minigameType = minigameChoice < 0.4 ? "minigame1" : minigameChoice < 0.8 ? "minigame2" : "minigame3";
+      let minigameType = minigameChoice < 0.0 ? "minigame1" : minigameChoice < 0.0 ? "minigame2" : "minigame3";
       if (minigameType == "minigame3") {
         if (pet.type == "Dragon") {
           minigameType = "minigame3";

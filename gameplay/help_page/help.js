@@ -26,7 +26,7 @@ function goBack() {
 // ===== TAB MANAGEMENT =====
 
 // Switch between Game Guide and Q&A tabs
-function switchTab(tabName) {
+function switchTab(tabName, evt) {
   // Update tab buttons
   const buttons = document.querySelectorAll(".tab-button");
   buttons.forEach((btn) => {
@@ -42,7 +42,7 @@ function switchTab(tabName) {
   });
 
   // Find which button was clicked
-  const clickedButton = event ? event.target : null;
+  const clickedButton = evt?.target || window.event?.target || null;
 
   // Activate selected tab
   if (clickedButton) {
