@@ -847,6 +847,9 @@ function dayTick() {
 
 // Check if pet was played with enough (4+ times)
 function checkPetPlayRequirement() {
+  console.log("Pet play req")
+  console.log(pet.playCounter)
+  console.log(getRequiredPlays())
   if (pet.playCounter < getRequiredPlays()) {
     pet.energy -= 20;
     pet.mood = "Bored";
@@ -864,6 +867,10 @@ function checkPlayerFeedingRequirement(){
 
 // Check if pet was fed enough (3+ times)
 function checkPetFeedingRequirement() {
+  console.log("Pet feed req");
+  console.log(FOOD_SHOP[FOOD_TIER_INDEX[player.foodTier]]);
+  console.log(pet.fedCounter);
+  console.log(getRequiredFeeds());
   if (pet.fedCounter < getRequiredFeeds()) {
     pet.energy -= 35;
     pet.mood = "Hungry";
@@ -1115,9 +1122,9 @@ const FOOD_TIER_INDEX = {
 
 const TOY_TIER_INDEX = {
   basic: 0,
-  premium: 1,
-  deluxe: 2,
-  gourmet: 3, 
+  standard: 1,
+  premium: 2,
+  deluxe: 3,
 };
 function getCurrentFood(){
   return FOOD_SHOP[FOOD_TIER_INDEX[player.foodTier]]
@@ -1129,11 +1136,19 @@ function getCurrentToy(){
 
 
 function getRequiredFeeds() {
-  return getCurrentFood().requiredFeeds;
+  var reqFeeds = getCurrentFood().requiredFeed;
+  if (reqFeeds == undefined) {
+    reqFeeds = 4;
+  }
+  return reqFeeds;
 }
 
 function getRequiredPlays() {
-  return getCurrentFood().dailyPlayNeeded;
+  var reqPlays = getCurrentToy().dailyPlayNeeded; 
+  if(reqPlays == undefined){
+    reqPlays = 4;
+  }
+  return reqPlays;
 }
 
 function getRequiredPlayerFeeds(){
@@ -1144,7 +1159,7 @@ function getRequiredPlayerFeeds(){
 // Feed pet: uses current food tier for cost, energy, and healing
 function feedPet() {
   // Check if player has bought food
-  daysSinceBought = player.currentDay-player.daysFoodBoughtFoodBought;
+  const daysSinceBought = player.currentDay - player.daysFoodBought;
   if (player.daysFoodBought === -7 || daysSinceBought >= 7) {
     showErrorNotification("You must buy food from the shop first!", "Dismiss");
     return;
@@ -1168,8 +1183,8 @@ function feedPet() {
 // Play with pet: costs 1 hour, need 6+ per day
 function playWithPet() {
 
-  //Calculates how long ago toy was bought.
-  daysSinceBought = player.currentDay-player.daysFoodBoughtFoodBought;
+  // Calculates how long ago toy was bought.
+  const daysSinceBought = player.currentDay - player.daysToyBought;
   // Check if player has bought a toy
   if (player.daysToyBought === -7) {
     showErrorNotification("You must buy a toy from the shop first!", "Dismiss");
@@ -1399,7 +1414,7 @@ const TODO_LIST = [
   "Maintain pet health above 80",
   "Maintain pet energy above 80",
   "Keep pet mood positive",
-  "Eat food (1 hour)",
+  "Eat food(3 times)",
 ];
 
 let completedTodos = {}; // Track completed tasks for the current day
@@ -1545,14 +1560,14 @@ function updateTodoList() {
 function isTaskCompleted(index) {
   // Map tasks to player actions
   const taskMap = {
-    0: pet.fedCounter >= 3, // Feed pet (3+ times)
-    1: pet.playCounter >= 4, // Play with pet (4+ times)
+    0: pet.fedCounter >= getRequiredFeeds(), // Feed pet (3+ times)
+    1: pet.playCounter >= getRequiredPlays(), // Play with pet (4+ times)
     2: pet.hasCleaned, // Clean pet (once)
     3: player.hasExercised, // Exercise (2 hours)
     4: player.hasHangout, // Hang out with friends (3 hours)
     5: player.hasRead, // Read (1 hour)
     6: pet.hadVetVisitThisWeek, // Visit the vet (once per week)
-    7: player.avgSleepHours >= 8, // Get 8+ hours of sleep
+    7: player.lastSleepHours >= 8, // Get 8+ hours of sleep
     8: pet.health >= 80, // Maintain pet health above 80
     9: pet.energy >= 80, // Maintain pet energy above 80
     10:
@@ -1561,6 +1576,7 @@ function isTaskCompleted(index) {
       pet.mood === "Content" ||
       pet.mood === "Rested" ||
       pet.mood === "Healthy", // Keep pet mood positive
+    11:player.fedCounter >= 3,
   };
   return taskMap[index] || false;
 }
