@@ -3,11 +3,7 @@
    Modern card-based layout with gradient backgrounds and
    smooth animations for an engaging game experience
    ============================================================ */
-
-/* Use the local Bubblegum Sans font file offline.
-   Uncomment the next line to switch back to Google Fonts. */
-/* @import url("https://fonts.googleapis.com/css2?family=Bubblegum+Sans&display=swap"); */
-
+   
 /* ===== FONTS ===== */
 @font-face {
   font-family: "Bubblegum Sans";

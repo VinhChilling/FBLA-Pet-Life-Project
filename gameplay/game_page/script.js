@@ -1855,6 +1855,16 @@ function containsBannedWord(name) {
   return null;
 }
 
+
+
+// Escape HTML
+function escapeForHTML(str) {
+  const d = document.createElement("div");
+  d.textContent = String(str);
+  return d.innerHTML;
+}
+
+
 // Validate syntax: length + allowed characters
 function isValidNameSyntax(s) {
   if (typeof s !== "string") return false;
@@ -1864,13 +1874,6 @@ function isValidNameSyntax(s) {
     t.length <= NAME_MAX_LENGTH &&
     NAME_REGEX.test(t)
   );
-}
-
-// Escape HTML
-function escapeForHTML(str) {
-  const d = document.createElement("div");
-  d.textContent = String(str);
-  return d.innerHTML;
 }
 
 // Main validator
