@@ -13,6 +13,7 @@ let financialChart = null;
 let timeUsageChart = null;
 let activityChart = null;
 let sleepChart = null;
+let trainingChart = null;
 
 const DASHBOARD_ASSETS = {
   images: "../../images/",
@@ -131,9 +132,9 @@ function normalizeGameStats(stats) {
     stats.pet.timesCleaned = stats.pet.timesCleaned || 0;
     stats.pet.timesVisitedVet = stats.pet.timesVisitedVet || 0;
     stats.pet.timesDoingChores = stats.pet.timesDoingChores || 0;
-    stats.pet.health = stats.pet.health || 0;
+    stats.pet.health = clamp(stats.pet.health) || 0;
     stats.pet.mood = stats.pet.mood || "Happy";
-    stats.pet.energy = stats.pet.energy || 0;
+    stats.pet.energy = clamp(stats.pet.energy) || 0;
     stats.pet.evolutionStage = stats.pet.evolutionStage ?? 0;
     stats.pet.evolutionHistory =
       stats.pet.evolutionHistory || [{ stage: 0, day: 1 }];
@@ -146,8 +147,8 @@ function normalizeGameStats(stats) {
     stats.player.timesSlept = stats.player.timesSlept || 0;
     stats.player.timesRead = stats.player.timesRead || 0;
     stats.player.timesHangout = stats.player.timesHangout || 0;
-    stats.player.health = stats.player.health || 0;
-    stats.player.mood = stats.player.mood || 0;
+    stats.player.health = clamp(stats.player.health) || 0;
+    stats.player.mood = clamp(stats.player.mood) || 0;
     stats.player.coins = stats.player.coins || 0;
     stats.player.expenses = stats.player.expenses || 0;
     stats.player.avgSleepHours = stats.player.avgSleepHours || 7;
@@ -408,6 +409,7 @@ function generateChartData(stats) {
   let playerHealthData = [];
   let playerMoodData = [];
   let scoreData = [];
+  let trainingData = [];
   let sleepHours = [];
 
   if (Array.isArray(dailyStats) && dailyStats.length > 0) {
@@ -416,6 +418,7 @@ function generateChartData(stats) {
     playerHealthData = dailyStats.map((d) => d.player?.health ?? 0);
     playerMoodData = dailyStats.map((d) => mapMoodToScore(d.player?.mood ?? player.mood));
     scoreData = dailyStats.map((d) => d.player?.currentPoints ?? 0);
+    trainingData = dailyStats.map((d) => d.player?.timesTrained ?? 0);
     sleepHours = dailyStats.map((d) => d.player?.lastSleepHours ?? (player.avgSleepHours || 0));
   } else {
     const playerMoodFinal = mapMoodToScore(player.mood);
@@ -424,6 +427,7 @@ function generateChartData(stats) {
     playerHealthData = generateSimulatedData(daysPlayed, 35, 100, player.health || 50);
     playerMoodData = generateSimulatedData(daysPlayed, 30, 100, playerMoodFinal);
     scoreData = generateSimulatedData(daysPlayed, 0, 150, player.currentPoints || 0);
+    trainingData = generateSimulatedData(daysPlayed, 0, 3, player.timesTrained || 0);
     sleepHours = generateSimulatedData(daysPlayed, 5, 10, player.avgSleepHours || 7);
   }
 
@@ -437,6 +441,7 @@ function generateChartData(stats) {
     reading: player.timesRead || 0,
     todo: player.timesScheduled || 0,
     hangout: player.timesHangout || 0,
+    training: player.timesTrained || 0,
   };
 
   const timeUsage = {
@@ -448,6 +453,7 @@ function generateChartData(stats) {
     Exercise: activityCounts.exercise * 2,
     "Create To-Do": activityCounts.todo * 2,
     Hangout: activityCounts.hangout * 3,
+    Training: activityCounts.training * 1,
   };
 
   const expenseBreakdown = {
@@ -468,6 +474,7 @@ function generateChartData(stats) {
     playerHealth: playerHealthData,
     mood: playerMoodData,
     score: scoreData,
+    training: trainingData,
     sleepHours,
     activities: activityCounts,
     timeUsage,
@@ -736,6 +743,7 @@ function initializePerformanceView() {
   renderExpenseChart(gameStats);
   renderTimeUsageChart(gameStats);
   renderSleepChart(gameStats);
+  renderTrainingChart(gameStats);
   renderActivityChart(gameStats);
 }
 
@@ -1200,6 +1208,56 @@ function renderSleepChart(stats) {
     });
   }
 }
+
+/**
+ * Render the training sessions chart with Chart.js
+ * @param {Object} stats - Game statistics
+ */
+/*function renderTrainingChart(stats) {
+  const chartElement = document.getElementById("trainingChart");
+  if (!chartElement) return;
+
+  const chartData = generateChartData(stats);
+  const labels = Array.from({ length: Math.max(chartData.training.length, 1) }, (_, index) => `Day ${index + 1}`);
+  const values = chartData.training.map((value) => Number(value) || 0);
+
+  if (typeof trainingChart !== "undefined" && trainingChart && trainingChart.destroy) {
+    trainingChart.destroy();
+    trainingChart = null;
+  }
+
+  if (typeof Chart !== "undefined") {
+    const ctx = chartElement.getContext("2d");
+    // Create a simple bar/line combo showing training sessions per day
+    trainingChart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "Training Sessions",
+            data: values,
+            backgroundColor: "#06b6d4",
+            borderRadius: 6,
+            maxBarThickness: 48,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { grid: { display: false } },
+          y: { beginAtZero: true, grid: { color: "rgba(226, 232, 240, 0.8)" } },
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: (context) => `${context.dataset.label}: ${context.parsed.y}` } },
+        },
+      },
+    });
+  }
+} *\
 
 /**
  * Render the activity count chart with Chart.js
@@ -2292,3 +2350,7 @@ window.shareReport = shareReport;
 window.exportAllData = exportAllData;
 window.restartGame = restartGame;
 window.viewHelp = viewHelp;
+
+function clamp(v, a = 0, b = 100) {
+  return Math.max(a, Math.min(b, v));
+}
