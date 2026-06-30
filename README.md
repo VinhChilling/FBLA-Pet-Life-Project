@@ -239,6 +239,7 @@ The API will run on `http://127.0.0.1:8000` by default.
 
 ## Image Attributions
 - Main PetLife Logo Image created by Erin Hua
+- Pet Character Images created by Erin Hua
 - Cat Image used in Cat-specific Minigame: https://www.magnific.com/free-photos-vectors/cat-clipart 
 - Ball Image used in Dog-specific Minigame: https://clipart-library.com/dog-ball-clipart.html
 - Bone Image used in Dog-specific Minigame: https://www.pinterest.com/pin/206250857924068039/
